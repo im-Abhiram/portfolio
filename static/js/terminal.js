@@ -230,7 +230,16 @@ Instagram: https://www.instagram.com/im_abhiram__/
     const line = document.createElement('div');
     line.className = 'term-output-line';
     if (isCommand) {
-      line.innerHTML = `<span class="term-prompt-label">abhiram@noc:~$</span> <span style="color: #fff;">${text}</span>`;
+      const promptSpan = document.createElement('span');
+      promptSpan.className = 'term-prompt-label';
+      promptSpan.textContent = 'abhiram@noc:~$ ';
+
+      const cmdSpan = document.createElement('span');
+      cmdSpan.style.color = '#ffffff';
+      cmdSpan.textContent = text;
+
+      line.appendChild(promptSpan);
+      line.appendChild(cmdSpan);
     } else {
       line.textContent = text;
     }
@@ -252,7 +261,9 @@ Instagram: https://www.instagram.com/im_abhiram__/
     const args = parts.slice(1);
 
     if (mainCmd === 'clear') {
-      terminalBody.innerHTML = '';
+      while (terminalBody.firstChild) {
+        terminalBody.removeChild(terminalBody.firstChild);
+      }
       return;
     }
 

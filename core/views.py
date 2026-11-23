@@ -58,13 +58,24 @@ def download_resume_view(request):
     so visitors always receive a valid download.
     """
     settings_obj = PortfolioSettings.load()
-    if settings_obj.resume_file and os.path.exists(settings_obj.resume_file.path):
-        filename = settings_obj.resume_download_name or os.path.basename(settings_obj.resume_file.path)
-        return FileResponse(
-            open(settings_obj.resume_file.path, 'rb'),
-            as_attachment=True,
-            filename=filename
-        )
+    if settings_obj.resume_file and settings_obj.resume_file.name:
+        try:
+            file_path = os.path.abspath(settings_obj.resume_file.path)
+            media_root = os.path.abspath(settings.MEDIA_ROOT)
+            # Ensure path is strictly within MEDIA_ROOT (prevent directory traversal / symlink attacks)
+            if file_path.startswith(media_root) and os.path.exists(file_path):
+                raw_name = settings_obj.resume_download_name or os.path.basename(file_path)
+                # Sanitize filename against header injection / response splitting
+                clean_name = re.sub(r'[^a-zA-Z0-9_\-\.]', '_', raw_name)
+                if not clean_name.lower().endswith(('.pdf', '.docx')):
+                    clean_name += '.pdf'
+                return FileResponse(
+                    settings_obj.resume_file.open('rb'),
+                    as_attachment=True,
+                    filename=clean_name
+                )
+        except Exception:
+            pass  # Fall through to fallback text document safely
 
     # Fallback resume content based strictly on resume data
     profile = Profile.load()

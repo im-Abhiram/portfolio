@@ -1225,6 +1225,25 @@
 const projectsData = JSON.parse(document.getElementById('projects-json-data').textContent || '{}');
 const topicsData = JSON.parse(document.getElementById('topics-json-data').textContent || '{}');
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function sanitizeUrl(raw) {
+  if (!raw || typeof raw !== 'string') return '';
+  const trimmed = raw.trim();
+  if (/^https?:\/\//i.test(trimmed)) {
+    return encodeURI(trimmed);
+  }
+  return '';
+}
+
 function openProjectModal(slug) {
   const proj = projectsData[slug];
   if (!proj) return;
@@ -1232,27 +1251,30 @@ function openProjectModal(slug) {
   const content = document.getElementById('project-modal-content');
   const modal = document.getElementById('project-detail-modal');
 
-  let featuresHtml = proj.features.map(f => `<li>${f}</li>`).join('');
-  let techHtml = proj.technologies.map(t => `<span class="tech-tag">${t}</span>`).join('');
+  let featuresHtml = proj.features.map(f => `<li>${escapeHtml(f)}</li>`).join('');
+  let techHtml = proj.technologies.map(t => `<span class="tech-tag">${escapeHtml(t)}</span>`).join('');
+
+  const safeDemo = sanitizeUrl(proj.demo_url);
+  const safeGithub = sanitizeUrl(proj.github_url);
 
   let linksHtml = '';
-  if (proj.demo_url || proj.github_url) {
+  if (safeDemo || safeGithub) {
     linksHtml = `
       <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
-        ${proj.demo_url ? `<a href="${proj.demo_url}" target="_blank" rel="noopener noreferrer" class="hud-btn hud-btn-primary"><i class="bi bi-box-arrow-up-right"></i> Launch Deployed Webapp</a>` : ''}
-        ${proj.github_url ? `<a href="${proj.github_url}" target="_blank" rel="noopener noreferrer" class="hud-btn"><i class="bi bi-github"></i> View GitHub Repository</a>` : ''}
+        ${safeDemo ? `<a href="${safeDemo}" target="_blank" rel="noopener noreferrer" class="hud-btn hud-btn-primary"><i class="bi bi-box-arrow-up-right"></i> Launch Deployed Webapp</a>` : ''}
+        ${safeGithub ? `<a href="${safeGithub}" target="_blank" rel="noopener noreferrer" class="hud-btn"><i class="bi bi-github"></i> View GitHub Repository</a>` : ''}
       </div>
     `;
   }
 
   content.innerHTML = `
-    <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent-lime); margin-bottom: 0.4rem;">${proj.badge_label}</div>
-    <h3 style="font-size: 1.8rem; margin-bottom: 1rem;">${proj.title}</h3>
-    <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">${proj.summary}</p>
+    <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent-lime); margin-bottom: 0.4rem;">${escapeHtml(proj.badge_label)}</div>
+    <h3 style="font-size: 1.8rem; margin-bottom: 1rem;">${escapeHtml(proj.title)}</h3>
+    <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">${escapeHtml(proj.summary)}</p>
     
     <div style="margin-bottom: 1.5rem;">
       <h4 style="font-size: 1.1rem; color: var(--accent-lime); margin-bottom: 0.5rem;"><i class="bi bi-diagram-3"></i> System Architecture</h4>
-      <p style="font-size: 0.92rem; color: var(--text-main); line-height: 1.6;">${proj.architecture}</p>
+      <p style="font-size: 0.92rem; color: var(--text-main); line-height: 1.6;">${escapeHtml(proj.architecture)}</p>
     </div>
 
     <div style="margin-bottom: 1.5rem;">
@@ -1262,7 +1284,7 @@ function openProjectModal(slug) {
 
     <div style="margin-bottom: 1.5rem;">
       <h4 style="font-size: 1.1rem; color: var(--accent-lime); margin-bottom: 0.5rem;"><i class="bi bi-wrench"></i> Engineering Challenges Solved</h4>
-      <p style="font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6;">${proj.challenges}</p>
+      <p style="font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6;">${escapeHtml(proj.challenges)}</p>
     </div>
 
     <div style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
@@ -1284,28 +1306,28 @@ function openTopicModal(slug) {
   const modal = document.getElementById('topic-detail-modal');
 
   content.innerHTML = `
-    <div class="badge-tag" style="margin-bottom: 0.5rem;">${topic.badge_tag}</div>
-    <h3 style="font-size: 1.8rem; margin-bottom: 0.75rem;">${topic.title}</h3>
-    <p style="font-size: 1rem; color: var(--text-main); line-height: 1.6; margin-bottom: 1.5rem;">${topic.short_explanation}</p>
+    <div class="badge-tag" style="margin-bottom: 0.5rem;">${escapeHtml(topic.badge_tag)}</div>
+    <h3 style="font-size: 1.8rem; margin-bottom: 0.75rem;">${escapeHtml(topic.title)}</h3>
+    <p style="font-size: 1rem; color: var(--text-main); line-height: 1.6; margin-bottom: 1.5rem;">${escapeHtml(topic.short_explanation)}</p>
 
     <div style="margin-bottom: 1.5rem;">
       <h4 style="font-size: 1.1rem; color: var(--accent-lime); margin-bottom: 0.4rem;"><i class="bi bi-gear-wide-connected"></i> How It Works</h4>
-      <p style="font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6;">${topic.how_it_works}</p>
+      <p style="font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6;">${escapeHtml(topic.how_it_works)}</p>
     </div>
 
     <div style="margin-bottom: 1.5rem;">
       <h4 style="font-size: 1.1rem; color: var(--accent-lime); margin-bottom: 0.4rem;"><i class="bi bi-briefcase"></i> Practical Enterprise Use</h4>
-      <p style="font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6;">${topic.practical_use}</p>
+      <p style="font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6;">${escapeHtml(topic.practical_use)}</p>
     </div>
 
     <div style="margin-bottom: 1.5rem; background-color: var(--bg-secondary); border-left: 3px solid var(--accent-amber); padding: 1rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;">
       <h4 style="font-size: 1rem; color: var(--accent-amber); margin-bottom: 0.25rem;"><i class="bi bi-lightbulb"></i> Troubleshooting Tip</h4>
-      <p style="font-size: 0.88rem; color: var(--text-main); margin: 0;">${topic.troubleshooting_tip}</p>
+      <p style="font-size: 0.88rem; color: var(--text-main); margin: 0;">${escapeHtml(topic.troubleshooting_tip)}</p>
     </div>
 
     <div style="border-top: 1px solid var(--border-color); padding-top: 1rem; font-family: var(--font-mono); font-size: 0.8rem;">
       <span style="color: var(--text-muted);">DIAGNOSTIC TOOLS:</span>
-      <span style="color: var(--accent-lime); margin-left: 0.5rem;">${topic.relevant_tools}</span>
+      <span style="color: var(--accent-lime); margin-left: 0.5rem;">${escapeHtml(topic.relevant_tools)}</span>
     </div>
   `;
 

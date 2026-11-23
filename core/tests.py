@@ -304,3 +304,103 @@ class AdminSecurityTests(TestCase):
         self.assertContains(response, "https://github.com/im-Abhiram")
         self.assertContains(response, "https://www.linkedin.com/in/imabhiram/")
         self.assertContains(response, "https://www.instagram.com/im_abhiram__/")
+
+
+class SecurityHardeningTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    def test_security_headers_present(self):
+        """Verify strict CSP, Permissions-Policy, nosniff, and clickjacking headers are emitted."""
+        response = self.client.get(reverse('home'))
+        self.assertEqual(response.status_code, 200)
+
+        # Content-Security-Policy
+        self.assertTrue(response.has_header('Content-Security-Policy'))
+        csp = response['Content-Security-Policy']
+        self.assertIn("default-src 'self'", csp)
+        self.assertIn("frame-ancestors 'none'", csp)
+
+        # Feature / Permissions Policy
+        self.assertTrue(response.has_header('Permissions-Policy'))
+        self.assertIn("camera=()", response['Permissions-Policy'])
+
+        # MIME sniffing & framing defense
+        self.assertEqual(response.get('X-Content-Type-Options'), 'nosniff')
+        self.assertEqual(response.get('X-Frame-Options'), 'DENY')
+        self.assertEqual(response.get('Referrer-Policy'), 'strict-origin-when-cross-origin')
+
+    def test_subnet_api_slash_8_dos_protection(self):
+        """Verify /8 calculation (16.7 million hosts) executes in O(1) time without OOM."""
+        import time
+        start = time.time()
+        response = self.client.get(reverse('lab:api_subnet_calc'), {'ip': '10.0.0.0', 'cidr': '8'})
+        duration = time.time() - start
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()['data']
+        self.assertEqual(data['total_hosts'], 16777216)
+        self.assertEqual(data['usable_hosts'], 16777214)
+        self.assertEqual(data['first_usable'], '10.0.0.1')
+        self.assertEqual(data['last_usable'], '10.255.255.254')
+        self.assertLess(duration, 0.15, "Calculation must finish in sub-150ms without memory bloat")
+
+    def test_subnet_api_bounds_validation(self):
+        """Verify out-of-bounds CIDR and invalid IPs are rejected safely with 400."""
+        # CIDR > 32
+        res1 = self.client.get(reverse('lab:api_subnet_calc'), {'ip': '192.168.1.0', 'cidr': '33'})
+        self.assertEqual(res1.status_code, 400)
+
+        # CIDR < 0
+        res2 = self.client.get(reverse('lab:api_subnet_calc'), {'ip': '192.168.1.0', 'cidr': '-1'})
+        self.assertEqual(res2.status_code, 400)
+
+        # Malformed IP string
+        res3 = self.client.get(reverse('lab:api_subnet_calc'), {'ip': '192.168.1.999', 'cidr': '24'})
+        self.assertEqual(res3.status_code, 400)
+
+        # Injection probe in IP
+        res4 = self.client.get(reverse('lab:api_subnet_calc'), {'ip': '192.168.1.1; DROP TABLE', 'cidr': '24'})
+        self.assertEqual(res4.status_code, 400)
+
+    def test_contact_header_injection_rejection(self):
+        """Verify email and subject header injection attempts (\r\n) are blocked."""
+        # Header injection in subject
+        payload = {
+            'name': 'Valid User',
+            'email': 'valid@user.com',
+            'subject': 'Inquiry\r\nBcc: victim@target.com',
+            'message': 'Testing header injection protection.',
+            'website_url': '',
+        }
+        response = self.client.post(reverse('contact:submit'), payload)
+        self.assertEqual(ContactMessage.objects.count(), 0)
+
+        # Header injection in email
+        payload['subject'] = 'Valid Subject'
+        payload['email'] = 'valid@user.com\r\nInjected-Header: evil'
+        response = self.client.post(reverse('contact:submit'), payload)
+        self.assertEqual(ContactMessage.objects.count(), 0)
+
+    def test_contact_rapid_submission_protection(self):
+        """Verify rapid repeated submissions are rate limited."""
+        payload = {
+            'name': 'Rapid Sender',
+            'email': 'sender@noc.local',
+            'subject': 'Fast packet stream',
+            'message': 'First message payload with sufficient length.',
+            'website_url': '',
+        }
+        res1 = self.client.post(reverse('contact:submit'), payload)
+        self.assertEqual(res1.status_code, 302)
+        self.assertEqual(ContactMessage.objects.count(), 1)
+
+        # Immediate follow-up from same session
+        res2 = self.client.post(reverse('contact:submit'), payload)
+        # Should be blocked by rapid flood defense
+        self.assertEqual(ContactMessage.objects.count(), 1)
+
+    def test_project_api_slug_injection_defense(self):
+        """Verify project API rejects malformed slugs."""
+        res = self.client.get('/portfolio/api/project/../../etc/passwd/')
+        self.assertEqual(res.status_code, 404)

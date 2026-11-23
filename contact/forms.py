@@ -47,24 +47,58 @@ class ContactForm(forms.ModelForm):
         }
 
     def clean_website_url(self):
-        val = self.cleaned_data.get('website_url')
+        val = self.cleaned_data.get('website_url', '').strip()
         if val:
             raise ValidationError("Automated transmission rejected by security filter.")
         return val
 
     def clean_name(self):
-        name = self.cleaned_data.get('name', '').strip()
-        if len(name) < 2:
+        raw_name = self.cleaned_data.get('name', '').strip()
+        if len(raw_name) < 2:
             raise ValidationError("Name must be at least 2 characters.")
-        # Reject simple script injection patterns
-        if re.search(r'<script|javascript:|eval\(', name, re.IGNORECASE):
+        if len(raw_name) > 100:
+            raise ValidationError("Name cannot exceed 100 characters.")
+        # Reject header injection / control characters
+        if any(c in raw_name for c in ('\r', '\n', '\0')):
+            raise ValidationError("Control characters are strictly prohibited.")
+        # Strip and reject HTML/script tags
+        cleaned = re.sub(r'<[^>]*>', '', raw_name)
+        if re.search(r'(<script|javascript:|eval\(|onerror=|onload=)', raw_name, re.IGNORECASE):
             raise ValidationError("Invalid input characters detected.")
-        return name
+        return cleaned
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email', '').strip().lower()
+        if not email:
+            raise ValidationError("Email is required.")
+        # Header injection defense
+        if any(c in email for c in ('\r', '\n', '\0')):
+            raise ValidationError("Invalid characters detected in email.")
+        return email
+
+    def clean_subject(self):
+        raw_subject = self.cleaned_data.get('subject', '').strip()
+        if len(raw_subject) < 3:
+            raise ValidationError("Subject must be at least 3 characters.")
+        if len(raw_subject) > 150:
+            raise ValidationError("Subject cannot exceed 150 characters.")
+        # Reject header injection
+        if any(c in raw_subject for c in ('\r', '\n', '\0')):
+            raise ValidationError("Control characters are prohibited in subject line.")
+        cleaned = re.sub(r'<[^>]*>', '', raw_subject)
+        if re.search(r'(<script|javascript:|eval\(|onerror=|onload=)', raw_subject, re.IGNORECASE):
+            raise ValidationError("Invalid characters detected in subject.")
+        return cleaned
 
     def clean_message(self):
-        message = self.cleaned_data.get('message', '').strip()
-        if len(message) < 10:
+        raw_message = self.cleaned_data.get('message', '').strip()
+        if len(raw_message) < 10:
             raise ValidationError("Message payload must contain at least 10 characters.")
-        if re.search(r'<script|javascript:|eval\(', message, re.IGNORECASE):
+        if len(raw_message) > 3000:
+            raise ValidationError("Message payload cannot exceed 3000 characters.")
+        if '\0' in raw_message:
+            raise ValidationError("Null byte characters are prohibited.")
+        if re.search(r'(<script|javascript:|eval\(|onerror=|onload=)', raw_message, re.IGNORECASE):
             raise ValidationError("Suspicious script tags are prohibited.")
-        return message
+        cleaned = re.sub(r'<[^>]*>', '', raw_message)
+        return cleaned

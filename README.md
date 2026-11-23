@@ -37,8 +37,9 @@ D:\portfolio\
 ├── core/
 │   ├── models.py             # PortfolioSettings model (singleton HUD toggles)
 │   ├── views.py              # Homepage, resume download stream, custom 404/500
+│   ├── middleware.py         # SecurityHeadersMiddleware (CSP, Permissions-Policy, COOP, CORP)
 │   ├── context_processors.py # Global site metadata and profile injector
-│   ├── tests.py              # Full automated test suite (19 passing tests)
+│   ├── tests.py              # Full automated test suite (25 passing tests)
 │   └── management/commands/
 │       └── seed_portfolio.py # One-command database population script
 ├── portfolio/
@@ -273,24 +274,33 @@ The portfolio features 8 production-grade projects spanning network simulation, 
 
 ---
 
-## 7. Security Controls
+## 8. Security Controls & Defense-in-Depth
 
-| Security Control | Implementation |
+| Security Vector | Implementation & Defensive Mechanism |
 | :--- | :--- |
-| **CSRF Defense** | Django `CsrfViewMiddleware` enforced on all POST forms |
-| **Spam Prevention** | Hidden honeypot field (`website_url`) rejecting automated bot payloads |
-| **Rate Limiting** | Max 5 transmissions per 15 minutes per IP address |
-| **XSS Prevention** | Context-aware HTML escaping via Django template engine; script tags stripped |
-| **Clickjacking** | `X-Frame-Options: DENY` |
+| **Content Security Policy (CSP)** | Custom middleware enforcing strict `script-src`, `style-src`, `font-src`, `img-src`, and `frame-ancestors 'none'` |
+| **Permissions Policy** | Browser hardware isolation: `camera=()`, `microphone=()`, `geolocation=()`, `payment=()`, `usb=()` |
+| **Clickjacking & Framing** | Dual-layer defense: `X-Frame-Options: DENY` and CSP `frame-ancestors 'none'` |
 | **MIME Sniffing** | `X-Content-Type-Options: nosniff` |
-| **SQL Injection** | Exclusively parameterized queries via Django ORM |
-| **File Upload Validation** | Strict extension allowlist (`pdf`, `docx`) with size limits |
+| **Referrer Leakage** | `Referrer-Policy: strict-origin-when-cross-origin` |
+| **Cross-Origin Isolation** | `Cross-Origin-Opener-Policy: same-origin-allow-popups` and `Cross-Origin-Resource-Policy: same-origin` |
+| **CSRF Protection** | Django `CsrfViewMiddleware` with `SameSite=Lax` cookie flags |
+| **Anti-Spam & Bot Defense** | Hidden honeypot field (`website_url`) rejecting automated bot payloads |
+| **Dual-Layer Rate Limiting** | Sliding window rate limiter (max 5 transmissions / 15 mins) plus session-level rapid flood throttle |
+| **IP Spoofing Defense** | Strict syntax validation of client IP addresses via `ipaddress` library before rate evaluation |
+| **Header Injection Defense** | Contact form strips and rejects carriage return (`\r`) and newline (`\n`) characters in email and subject |
+| **Subnet API DoS Immunity** | $O(1)$ memory address calculations eliminating generator list expansion; immune to `/8` (16.7M host) memory exhaustion |
+| **DOM XSS Elimination** | Terminal (`terminal.js`) and UI alerts (`main.js`) construct text nodes via `.textContent` without unsafe `innerHTML` |
+| **Modal Data Sanitization** | Dynamic project modals execute client-side HTML escaping (`escapeHtml`) and URL validation (`sanitizeUrl`) |
+| **Path Traversal Defense** | Resume file serving verifies requested paths remain strictly within canonical `MEDIA_ROOT` bounds |
+| **SQL Injection** | Exclusively parameterized queries via Django ORM; zero raw string SQL concatenation |
+| **Audit Log Immutability** | Contact message logs in Django Admin are strictly read-only (`has_add_permission=False`) |
 
 ---
 
-## 8. Verification & Test Suite
+## 9. Verification & Test Suite
 
-The test suite covers views, models, forms, security filters, rate limiting, and the subnet calculator API.
+The automated test suite covers views, models, forms, security filters, rate limiting, DoS resistance, and the subnet calculator API.
 
 Run all tests:
 ```powershell
@@ -300,9 +310,9 @@ python manage.py test
 Expected output:
 ```text
 Creating test database for alias 'default'...
-..............
+.........................
 ----------------------------------------------------------------------
-Ran 15 tests in 1.4s
+Ran 25 tests in 3.0s
 
 OK
 Destroying test database for alias 'default'...

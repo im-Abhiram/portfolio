@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Security settings
 SECRET_KEY = os.environ.get(
     'DJANGO_SECRET_KEY',
-    'django-insecure-portfolio-abhiram-anil-infrawall-cyber-sec-key-2026-production-ready'
+    'c9b84f3e6a1d7e2f5b8c0a9d3e7f1b5c8e2a4d6f0b9c3e7a1d5f8b2c4e6a0d9f'
 )
 
 # DEBUG is True by default in local dev, set to 'False' on PythonAnywhere
@@ -54,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'core.middleware.SecurityHeadersMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -116,12 +117,15 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 
-# Security Headers
+# Security Headers & Cookies
 X_FRAME_OPTIONS = 'DENY'
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_HTTPONLY = False  # Allows JS to read csrftoken cookie for AJAX if needed
+CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_AGE = 86400  # 1 day
 
 # Production SSL / HTTPS hardening when DEBUG is False

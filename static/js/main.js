@@ -235,8 +235,16 @@ function initContactForm() {
     if (!alertContainer) return;
     const alertDiv = document.createElement('div');
     alertDiv.className = `alert-box alert-${type}`;
-    const icon = type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill';
-    alertDiv.innerHTML = `<i class="bi ${icon}"></i> <span>${text}</span>`;
+    const iconClass = type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill';
+    
+    const icon = document.createElement('i');
+    icon.className = `bi ${iconClass}`;
+    
+    const msg = document.createElement('span');
+    msg.textContent = ' ' + text;
+    
+    alertDiv.appendChild(icon);
+    alertDiv.appendChild(msg);
     alertContainer.appendChild(alertDiv);
   }
 }

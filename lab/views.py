@@ -18,29 +18,45 @@ def lab_index_view(request):
 
 def api_subnet_calc(request):
     """
-    Optional server-side validation and calculation API.
-    Handles IPv4 and CIDR with error checking.
+    Defensive server-side validation and calculation API.
+    Handles IPv4 and CIDR with strict O(1) memory bounds, preventing DoS/memory exhaustion.
     """
     ip_str = request.GET.get('ip', '192.168.10.0').strip()
     cidr_str = request.GET.get('cidr', '24').strip().lstrip('/')
+
+    # Input length constraint to prevent ReDoS / memory attacks
+    if len(ip_str) > 45 or len(cidr_str) > 5:
+        return JsonResponse({'status': 'error', 'message': 'Input length exceeds permitted threshold'}, status=400)
 
     try:
         cidr_int = int(cidr_str)
         if not (0 <= cidr_int <= 32):
             return JsonResponse({'status': 'error', 'message': 'CIDR must be between 0 and 32'}, status=400)
 
+        # Validate IP string format strictly before creating network
+        try:
+            ipaddress.IPv4Address(ip_str)
+        except ValueError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid IPv4 address format'}, status=400)
+
         network = ipaddress.IPv4Network(f"{ip_str}/{cidr_int}", strict=False)
         
-        # Calculate usable hosts
+        # Calculate usable hosts safely in O(1) memory WITHOUT generator expansion
         total_hosts = network.num_addresses
-        usable_hosts = max(0, total_hosts - 2) if cidr_int < 31 else (2 if cidr_int == 31 else 1)
+        if cidr_int == 32:
+            usable_hosts = 1
+            first_usable = str(network.network_address)
+            last_usable = str(network.network_address)
+        elif cidr_int == 31:
+            usable_hosts = 2  # RFC 3021 Point-to-Point
+            first_usable = str(network.network_address)
+            last_usable = str(network.broadcast_address)
+        else:
+            usable_hosts = max(0, total_hosts - 2)
+            first_usable = str(network.network_address + 1)
+            last_usable = str(network.broadcast_address - 1)
 
-        hosts = list(network.hosts())
-        first_usable = str(hosts[0]) if hosts else str(network.network_address)
-        last_usable = str(hosts[-1]) if hosts else str(network.broadcast_address)
-
-        # Binary breakdown
-        ip_obj = ipaddress.IPv4Address(ip_str) if ipaddress.IPv4Address(ip_str) in network else network.network_address
+        # Binary breakdown in O(1)
         binary_ip = '.'.join(f"{int(octet):08b}" for octet in str(network.network_address).split('.'))
         binary_mask = '.'.join(f"{int(octet):08b}" for octet in str(network.netmask).split('.'))
 
@@ -49,7 +65,7 @@ def api_subnet_calc(request):
         wildcard_ints = [255 - o for o in netmask_ints]
         wildcard_mask = '.'.join(str(o) for o in wildcard_ints)
 
-        # Determine class
+        # Determine class safely
         first_octet = int(str(network.network_address).split('.')[0])
         if first_octet < 128:
             ip_class = 'Class A'
@@ -80,7 +96,7 @@ def api_subnet_calc(request):
                 'binary_mask': binary_mask,
             }
         })
-    except ValueError as e:
-        return JsonResponse({'status': 'error', 'message': f"Invalid IP or CIDR: {str(e)}"}, status=400)
-    except Exception as e:
-        return JsonResponse({'status': 'error', 'message': f"Calculation error: {str(e)}"}, status=500)
+    except (ValueError, ipaddress.AddressValueError, ipaddress.NetmaskValueError):
+        return JsonResponse({'status': 'error', 'message': 'Invalid IPv4 or CIDR parameter'}, status=400)
+    except Exception:
+        return JsonResponse({'status': 'error', 'message': 'Internal subnet calculation failure'}, status=500)
