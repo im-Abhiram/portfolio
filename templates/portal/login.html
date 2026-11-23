@@ -58,6 +58,29 @@
           {% endif %}
         </div>
 
+        <!-- Visual CAPTCHA Verification Challenge -->
+        <div class="portal-form-group">
+          <label class="portal-label" for="{{ form.captcha.id_for_label }}">
+            <i class="bi bi-shield-check" style="color: var(--portal-lime);"></i> Security Verification Challenge
+          </label>
+          
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+            <div style="background: #121714; border: 1px solid var(--portal-border); border-radius: 6px; overflow: hidden; display: flex; align-items: center;">
+              <img id="captchaImg" src="{{ captcha_img }}" alt="Security CAPTCHA Challenge" style="display: block; width: 180px; height: 55px;">
+            </div>
+            <button type="button" id="refreshCaptchaBtn" class="portal-btn-sm portal-btn-outline" style="padding: 14px 14px; font-size: 1.15rem;" title="Generate new security challenge">
+              <i class="bi bi-arrow-clockwise"></i>
+            </button>
+          </div>
+
+          {{ form.captcha }}
+          {% if form.captcha.errors %}
+            <div class="portal-help" style="color: var(--portal-red); font-weight: 600;">{{ form.captcha.errors.0 }}</div>
+          {% else %}
+            <div class="portal-help">Case-insensitive. Click reload button if challenge is hard to read.</div>
+          {% endif %}
+        </div>
+
         <button type="submit" class="portal-btn-sm portal-btn-accent" style="width: 100%; justify-content: center; padding: 12px; font-size: 0.9rem; margin-top: 10px; cursor: pointer;">
           <i class="bi bi-key"></i> Authenticate Operator
         </button>
@@ -71,5 +94,30 @@
     </div>
   </div>
 
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const refreshBtn = document.getElementById('refreshCaptchaBtn');
+      const captchaImg = document.getElementById('captchaImg');
+      if (refreshBtn && captchaImg) {
+        refreshBtn.addEventListener('click', () => {
+          const icon = refreshBtn.querySelector('i');
+          if (icon) icon.classList.add('spin-anim');
+          fetch('{% url "portal:captcha_refresh" %}')
+            .then(res => res.json())
+            .then(data => {
+              if (data.status === 'ok' && data.image) {
+                captchaImg.src = data.image;
+              }
+            })
+            .catch(err => console.error("Error refreshing captcha:", err))
+            .finally(() => {
+              setTimeout(() => {
+                if (icon) icon.classList.remove('spin-anim');
+              }, 400);
+            });
+        });
+      }
+    });
+  </script>
 </body>
 </html>

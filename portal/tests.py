@@ -39,36 +39,83 @@ class PortalAuthenticationTests(TestCase):
             self.assertIn(reverse('portal:login'), response.url)
 
     def test_login_page_renders_cleanly(self):
-        """Operator login page renders with 200 OK and contains login form fields."""
+        """Operator login page renders with 200 OK and contains login form fields and CAPTCHA challenge."""
         response = self.client.get(reverse('portal:login'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "OPERATOR ACCESS")
         self.assertContains(response, "username")
         self.assertContains(response, "password")
+        self.assertContains(response, "Security Verification Challenge")
+        self.assertContains(response, "data:image/png;base64,")
 
-    def test_successful_staff_login(self):
-        """Valid staff credentials successfully authenticate and redirect to dashboard."""
+    def test_admin_login_blocked_and_redirected_to_custom_gui(self):
+        """Standard /admin/login/ is intercepted, blocking default Django login and serving custom GUI."""
+        response = self.client.get('/admin/login/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "OPERATOR ACCESS")
+        self.assertContains(response, "Security Verification Challenge")
+
+    def test_captcha_refresh_endpoint(self):
+        """The /portal/captcha/refresh/ endpoint returns a valid base64 image challenge."""
+        response = self.client.get(reverse('portal:captcha_refresh'))
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['status'], 'ok')
+        self.assertTrue(data['image'].startswith('data:image/png;base64,'))
+
+    def test_failed_login_invalid_captcha(self):
+        """Failing CAPTCHA challenge blocks login attempt before credential check."""
+        # Set session captcha
+        session = self.client.session
+        session['portal_captcha_code'] = 'VALID'
+        session.save()
+
         response = self.client.post(reverse('portal:login'), {
             'username': 'operator_abhiram',
             'password': 'SecurePassword123!',
+            'captcha': 'WRONG_CODE',
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Security challenge verification failed")
+
+    def test_successful_staff_login(self):
+        """Valid staff credentials with correct CAPTCHA successfully authenticate."""
+        session = self.client.session
+        session['portal_captcha_code'] = 'SEC99'
+        session.save()
+
+        response = self.client.post(reverse('portal:login'), {
+            'username': 'operator_abhiram',
+            'password': 'SecurePassword123!',
+            'captcha': 'SEC99',
         })
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('portal:dashboard'))
 
     def test_failed_login_invalid_password(self):
-        """Wrong credentials fail with an error message and status 200."""
+        """Wrong password with valid CAPTCHA fails with invalid credentials message."""
+        session = self.client.session
+        session['portal_captcha_code'] = 'SEC99'
+        session.save()
+
         response = self.client.post(reverse('portal:login'), {
             'username': 'operator_abhiram',
             'password': 'WrongPassword!',
+            'captcha': 'SEC99',
         })
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Invalid operator credentials")
 
     def test_regular_user_denied_staff_clearance(self):
         """Non-staff user cannot authenticate into operator portal."""
+        session = self.client.session
+        session['portal_captcha_code'] = 'SEC99'
+        session.save()
+
         response = self.client.post(reverse('portal:login'), {
             'username': 'visitor_bob',
             'password': 'BobPassword123!',
+            'captcha': 'SEC99',
         })
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Staff privilege clearance required")

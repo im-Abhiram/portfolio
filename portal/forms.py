@@ -20,6 +20,15 @@ class PortalLoginForm(forms.Form):
             'autocomplete': 'current-password',
         })
     )
+    captcha = forms.CharField(
+        max_length=10,
+        widget=forms.TextInput(attrs={
+            'class': 'portal-input',
+            'placeholder': 'Enter Security Code Shown Above',
+            'autocomplete': 'off',
+            'spellcheck': 'false',
+        })
+    )
 
 
 class ProfileEditForm(forms.ModelForm):

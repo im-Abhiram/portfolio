@@ -10,14 +10,23 @@ from contact.models import ContactMessage
 from portfolio.models import Profile, Project, Skill, Certification, Experience
 from core.models import PortfolioSettings
 
+from .captcha import generate_captcha_code, generate_captcha_image
 from .forms import (
     PortalLoginForm, ProfileEditForm, PortfolioSettingsEditForm,
     ProjectForm, SkillForm, CertificationForm, ExperienceForm
 )
 
 
+def refresh_captcha_view(request):
+    """AJAX endpoint to generate and return a fresh CAPTCHA challenge."""
+    code = generate_captcha_code()
+    request.session['portal_captcha_code'] = code.upper()
+    img_data = generate_captcha_image(code)
+    return JsonResponse({'status': 'ok', 'image': img_data})
+
+
 def portal_login_view(request):
-    """Custom high-security NOC authentication portal."""
+    """Custom high-security NOC authentication portal with visual CAPTCHA verification."""
     if request.user.is_authenticated and request.user.is_staff:
         return redirect('portal:dashboard')
 
@@ -25,6 +34,26 @@ def portal_login_view(request):
 
     if request.method == 'POST':
         form = PortalLoginForm(request.POST)
+        session_code = request.session.get('portal_captcha_code', '').strip().upper()
+        user_code = request.POST.get('captcha', '').strip().upper()
+
+        # 1. Enforce CAPTCHA security challenge
+        if not session_code or user_code != session_code:
+            new_code = generate_captcha_code()
+            request.session['portal_captcha_code'] = new_code.upper()
+            captcha_img = generate_captcha_image(new_code)
+
+            form.is_valid()  # populate cleaned_data/errors
+            form.add_error('captcha', "Security challenge verification failed. Please enter the characters shown below.")
+            return render(request, 'portal/login.html', {
+                'form': form,
+                'captcha_img': captcha_img,
+                'next': next_url,
+            })
+
+        # 2. CAPTCHA passed: single-use token purge
+        request.session.pop('portal_captcha_code', None)
+
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
@@ -39,11 +68,25 @@ def portal_login_view(request):
                     messages.error(request, "Access restricted. Staff privilege clearance required.")
             else:
                 messages.error(request, "Access denied. Invalid operator credentials.")
+
+        # If authentication failed, generate a fresh CAPTCHA for the next attempt
+        new_code = generate_captcha_code()
+        request.session['portal_captcha_code'] = new_code.upper()
+        captcha_img = generate_captcha_image(new_code)
+        return render(request, 'portal/login.html', {
+            'form': form,
+            'captcha_img': captcha_img,
+            'next': next_url,
+        })
     else:
         form = PortalLoginForm()
+        code = generate_captcha_code()
+        request.session['portal_captcha_code'] = code.upper()
+        captcha_img = generate_captcha_image(code)
 
     return render(request, 'portal/login.html', {
         'form': form,
+        'captcha_img': captcha_img,
         'next': next_url,
     })
 

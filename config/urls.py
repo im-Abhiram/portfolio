@@ -4,6 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from core.views import home_view, download_resume_view, custom_404_view, custom_500_view
+from portal.views import portal_login_view, portal_logout_view, dashboard_view
 
 # Configure Django Admin Branding
 admin.site.site_header = "Abhiram Anil // Infrastructure NOC & Security Admin"
@@ -11,8 +12,18 @@ admin.site.site_title = "NOC Operations Portal"
 admin.site.index_title = "Infrastructure & Portfolio Control Center"
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    # 1. Block and intercept default Django admin login, replacing with custom NOC GUI Portal
+    path('admin/login/', portal_login_view, name='admin_login_redirect'),
+    path('admin/logout/', portal_logout_view, name='admin_logout_redirect'),
+    path('admin/', dashboard_view, name='admin_root_dashboard'),
+
+    # 2. Obfuscated low-level Django ORM admin (accessible only if required)
+    path('sys-admin/', admin.site.urls),
+
+    # 3. NOC Operations Portal & CMS
     path('portal/', include('portal.urls', namespace='portal')),
+
+    # 4. Public Portfolio Routes
     path('', home_view, name='home'),
     path('resume/download/', download_resume_view, name='download_resume'),
     path('portfolio/', include('portfolio.urls', namespace='portfolio')),

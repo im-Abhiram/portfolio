@@ -689,6 +689,16 @@ body.portal-body {
   color: #99d6ff;
 }
 
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin-anim {
+  animation: spin 0.4s linear infinite;
+  display: inline-block;
+}
+
 /* --------------------------------------------------------------------------
    Modal for Viewing Transmissions
    -------------------------------------------------------------------------- */

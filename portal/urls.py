@@ -8,6 +8,7 @@ urlpatterns = [
     path('', views.dashboard_view, name='dashboard'),
     path('login/', views.portal_login_view, name='login'),
     path('logout/', views.portal_logout_view, name='logout'),
+    path('captcha/refresh/', views.refresh_captcha_view, name='captcha_refresh'),
 
     # Visitor Contact Transmissions
     path('messages/', views.messages_list_view, name='messages'),
