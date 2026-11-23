@@ -117,11 +117,15 @@ Open [http://127.0.0.1:8000](http://127.0.0.1:8000) in your browser.
 
 ---
 
-## 5. PythonAnywhere Free Account Deployment Guide
+## 5. PythonAnywhere Free Account Deployment & Update Guide
 
 This project is tailored specifically for PythonAnywhere's free account (`abhiramportfolio.pythonanywhere.com`).
 
-### 1. Upload Project Files
+---
+
+### Part A: Initial First-Time Deployment Setup
+
+#### 1. Clone Project Files
 Log in to your PythonAnywhere account (`abhiramportfolio`) and open a **Bash Console**:
 ```bash
 # Clone the repository directly into your home directory:
@@ -130,14 +134,14 @@ git clone https://github.com/im-Abhiram/portfolio.git portfolio
 cd ~/portfolio
 ```
 
-### 2. Create and Activate Virtual Environment
+#### 2. Create and Activate Virtual Environment
 ```bash
 mkvirtualenv --python=python3.10 portfolio-venv
 cd ~/portfolio
 pip install -r requirements.txt
 ```
 
-### 3. Run Migrations & Seed Data
+#### 3. Run Migrations & Seed Data
 ```bash
 python manage.py migrate
 python manage.py seed_portfolio
@@ -145,7 +149,7 @@ python manage.py createsuperuser
 python manage.py collectstatic --noinput
 ```
 
-### 4. Configure PythonAnywhere Web Tab
+#### 4. Configure PythonAnywhere Web Tab
 Navigate to the **Web** tab in PythonAnywhere dashboard:
 1. Click **Add a new web app** -> Select **Manual configuration** -> Select **Python 3.10** (or installed Python 3.x).
 2. **Code Section**:
@@ -161,6 +165,57 @@ Navigate to the **Web** tab in PythonAnywhere dashboard:
 5. Click **Reload abhiramportfolio.pythonanywhere.com**.
 
 Your portfolio is now live at **[https://abhiramportfolio.pythonanywhere.com](https://abhiramportfolio.pythonanywhere.com)** with zero hosting fees!
+
+---
+
+### Part B: Updating the Web App with Latest GitHub Commits
+
+Whenever you push new changes, bug fixes, or features to your GitHub repository (`main` branch), use any of the methods below to update your live PythonAnywhere site.
+
+#### Method 1: Instant 1-Line Update (Fastest & Recommended)
+Open a **Bash Console** in PythonAnywhere and paste this single command:
+```bash
+cd ~/portfolio && source ~/.virtualenvs/portfolio-venv/bin/activate && git pull origin main && pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput && touch /var/www/abhiramportfolio_pythonanywhere_com_wsgi.py
+```
+This automatically pulls your code, updates packages, migrates the database, refreshes static files, and reloads your web app in seconds!
+
+#### Method 2: Using the Included Shell Script (`update_pa.sh`)
+Inside your PythonAnywhere Bash Console:
+```bash
+cd ~/portfolio
+bash update_pa.sh
+```
+
+#### Method 3: Step-by-Step Manual Update
+If you prefer running each step individually:
+```bash
+# 1. Navigate to the repository
+cd ~/portfolio
+
+# 2. Activate virtual environment
+workon portfolio-venv
+
+# 3. Pull latest code from GitHub
+git pull origin main
+
+# 4. Install any new dependencies
+pip install -r requirements.txt
+
+# 5. Apply any database migrations
+python manage.py migrate
+
+# 6. Collect updated static assets (CSS, JS, images)
+python manage.py collectstatic --noinput
+
+# 7. Reload the live web application
+touch /var/www/abhiramportfolio_pythonanywhere_com_wsgi.py
+# (Or click the green 'Reload abhiramportfolio.pythonanywhere.com' button in the Web tab)
+```
+
+#### Verification After Updating:
+1. Open your live website: **[https://abhiramportfolio.pythonanywhere.com](https://abhiramportfolio.pythonanywhere.com)**
+2. Do a hard refresh in your browser (`Ctrl + F5` or `Cmd + Shift + R`) to bypass cached CSS/JS.
+3. Access your operator portal: **[https://abhiramportfolio.pythonanywhere.com/portal/login/](https://abhiramportfolio.pythonanywhere.com/portal/login/)** to check visitor messages and make live edits.
 
 ---
 
