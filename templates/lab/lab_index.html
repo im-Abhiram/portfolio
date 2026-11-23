@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="section-padding" style="padding-top: 130px;">
+  <div class="container-custom">
+    <div class="section-header">
+      <div class="section-pretitle">
+        <i class="bi bi-cpu"></i> <span>LABORATORY PORTAL</span>
+      </div>
+      <h1 class="section-title">Network & Cybersecurity Lab</h1>
+      <p class="section-description">
+        Access simulated infrastructure architectures, protocol analysis modules, and diagnostic tools.
+      </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2rem;">
+      <div style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 2rem;">
+        <i class="bi bi-diagram-3 text-accent-lime" style="font-size: 2.5rem; margin-bottom: 1rem; display: block;"></i>
+        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">Simulated Topology Explorer</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+          Interactive Cisco core switch, pfSense firewall, and VLAN architecture with live packet traversal simulation.
+        </p>
+        <a href="{% url 'home' %}#lab" class="hud-btn hud-btn-primary">Open Topology Explorer</a>
+      </div>
+
+      <div style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 2rem;">
+        <i class="bi bi-calculator text-accent-lime" style="font-size: 2.5rem; margin-bottom: 1rem; display: block;"></i>
+        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">Subnet Calculator</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+          Bitwise calculation of network addresses, broadcast boundaries, wildcard masks, and binary representations.
+        </p>
+        <a href="{% url 'home' %}#lab" class="hud-btn">Open Subnet Calculator</a>
+      </div>
+
+      <div style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 2rem;">
+        <i class="bi bi-layers-half text-accent-lime" style="font-size: 2.5rem; margin-bottom: 1rem; display: block;"></i>
+        <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">OSI 7-Layer Visual Stack</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+          Interactive layer-by-layer diagnostic breakdown with PDUs, common protocols, and real-world enterprise scenarios.
+        </p>
+        <a href="{% url 'home' %}#lab" class="hud-btn">Inspect OSI Stack</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

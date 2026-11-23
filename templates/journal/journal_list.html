@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="section-padding" style="padding-top: 130px;">
+  <div class="container-custom">
+    <div class="section-header">
+      <div class="section-pretitle">
+        <i class="bi bi-journal-text"></i> <span>FIELD ARCHIVES</span>
+      </div>
+      <h1 class="section-title">Technical Field Notes & Articles</h1>
+      <p class="section-description">
+        Architectural guides, network engineering documentation, and cybersecurity lab research authored by Abhiram Anil.
+      </p>
+    </div>
+
+    <!-- Category Filter Bar -->
+    <div class="skills-filter-bar" style="margin-bottom: 3rem;">
+      <a href="{% url 'journal:list' %}" class="lab-filter-btn {% if not active_category %}active{% endif %}">All Categories</a>
+      {% for cat in categories %}
+      <a href="{% url 'journal:list' %}?category={{ cat.slug }}" class="lab-filter-btn {% if active_category == cat.slug %}active{% endif %}">{{ cat.name }}</a>
+      {% endfor %}
+    </div>
+
+    <!-- Articles Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 2rem;">
+      {% for post in posts %}
+      <div style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 2.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <span class="badge-tag" style="margin-bottom: 0.75rem; display: inline-block;">{{ post.category.name }}</span>
+          <h2 style="font-size: 1.35rem; font-weight: 700; margin-bottom: 0.85rem;">
+            <a href="{% url 'journal:detail' post.slug %}" style="color: var(--text-main);">{{ post.title }}</a>
+          </h2>
+          <p style="font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem;">
+            {{ post.summary }}
+          </p>
+        </div>
+
+        <div style="border-top: 1px solid var(--border-color); padding-top: 1rem; display: flex; align-items: center; justify-content: space-between; font-family: var(--font-mono); font-size: 0.75rem;">
+          <span style="color: var(--text-muted);"><i class="bi bi-calendar"></i> {{ post.published_date|date:"M d, Y" }}</span>
+          <span style="color: var(--text-muted);"><i class="bi bi-clock"></i> {{ post.read_time_minutes }} min read</span>
+          <a href="{% url 'journal:detail' post.slug %}" style="color: var(--accent-lime); font-weight: 600;">
+            Read <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+      {% empty %}
+      <p style="color: var(--text-muted);">No field notes published in this category yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,1332 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<!-- ========================================================================
+     1. HERO SECTION: NOC TELEMETRY & INTERACTIVE NETWORK VISUALIZATION
+     ======================================================================== -->
+<section id="home" class="hero-section">
+  <div class="container-custom">
+    <div class="hero-grid">
+      <!-- Left Hero Column: Personal Branding & Identity -->
+      <div>
+        <div class="hero-badge">
+          <span class="status-dot"></span>
+          <span>{{ profile.hero_badge_label|default:"IT OPERATIONS / NETWORKING / SECURITY" }}</span>
+        </div>
+
+        <h1 class="hero-title">
+          Connecting systems.<br>
+          <span class="highlight-line">Securing infrastructure.</span>
+        </h1>
+
+        <p class="hero-description">
+          {{ profile.secondary_statement|default:"I work across IT operations, networking, cybersecurity and software development — connecting systems, solving infrastructure problems and strengthening security." }}
+        </p>
+
+        <div class="hero-ctas">
+          <a href="#projects" class="hud-btn hud-btn-primary">
+            <i class="bi bi-folder2-open"></i> <span>Explore My Work</span>
+          </a>
+          <a href="#lab" class="hud-btn">
+            <i class="bi bi-diagram-3"></i> <span>Launch Network Lab</span>
+          </a>
+          <a href="#contact" class="hud-btn">
+            <i class="bi bi-chat-square-text"></i> <span>Connect With Me</span>
+          </a>
+        </div>
+
+                <!-- Live NOC Telemetry Ribbon -->
+        <div class="hero-telemetry-bar">
+          <div class="telemetry-chip"><span class="pulse-dot green"></span> NODE: ACTIVE [KERALA_GATEWAY]</div>
+          <div class="telemetry-chip"><span class="telemetry-label">SECURITY:</span> HARDENED / 802.1Q</div>
+          <div class="telemetry-chip"><span class="telemetry-label">LATENCY:</span> 14ms (OPTIMAL)</div>
+          <div class="telemetry-chip"><span class="telemetry-label">STATUS:</span> SYS_OPERATIONAL</div>
+        </div>
+
+        <!-- Floating NOC Profile Status Card -->
+        <div class="noc-profile-card">
+          <div class="profile-stat-item">
+            <span class="profile-stat-label">STATUS</span>
+            <span class="profile-stat-val">IT OPS / SEC</span>
+          </div>
+          <div class="profile-stat-item">
+            <span class="profile-stat-label">LOCATION</span>
+            <span class="profile-stat-val">{{ profile.location|default:"KERALA, INDIA" }}</span>
+          </div>
+          <div class="profile-stat-item">
+            <span class="profile-stat-label">PHONE / CONTACT</span>
+            <span class="profile-stat-val" style="font-size: 0.75rem;">{{ profile.phone|default:"+91 9656537160" }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Hero Column: Interactive Network Visualization -->
+      <div>
+        <div class="network-viz-wrapper">
+          <div class="viz-header">
+            <div class="viz-title">
+              <i class="bi bi-diagram-3 text-accent-lime"></i>
+              <span>NETWORK TOPOLOGY SIMULATOR</span>
+            </div>
+            <div class="viz-controls">
+              <button type="button" id="hero-viz-toggle-btn" class="viz-control-btn" title="Pause or Resume animation">
+                <i class="bi bi-pause-fill"></i> Pause
+              </button>
+            </div>
+          </div>
+
+          <!-- HTML5 Canvas for Interactive Node Visualization -->
+          <canvas id="hero-network-canvas"></canvas>
+
+          <!-- Interactive Node Hover Tooltip -->
+          <div id="hero-viz-tooltip" class="viz-tooltip"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ========================================================================
+     2. ABOUT ME SECTION: EDITORIAL LAYOUT & TECHNICAL FOCUS
+     ======================================================================== -->
+<section id="about" class="section-padding">
+  <div class="container-custom">
+    <div class="section-header">
+      <div class="section-pretitle">
+        <i class="bi bi-shield-check"></i> <span>DIGITAL IDENTITY & PROFILE</span>
+      </div>
+      <h2 class="section-title">Practical Engineering Across Systems & Networks</h2>
+      <p class="section-description">
+        {{ profile.headline|default:"Building, connecting and securing digital infrastructure." }}
+      </p>
+    </div>
+
+    <div class="about-grid">
+      <!-- Left: Photo & Identity Card + Narrative -->
+      <div>
+        <div class="profile-hero-card" style="display: flex; gap: 1.5rem; align-items: center; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 2rem; box-shadow: var(--shadow-sm); flex-wrap: wrap;">
+          <div style="position: relative; width: 130px; height: 130px; flex-shrink: 0;">
+            <img src="{% if profile.profile_image %}{{ profile.profile_image.url }}{% else %}{% static 'images/abhiram_anil.jpg' %}{% endif %}" alt="Abhiram Anil" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius-md); border: 2px solid var(--border-color); box-shadow: var(--shadow-lime);">
+            <div style="position: absolute; bottom: -8px; right: -8px; background: var(--bg-main); border: 1px solid var(--accent-lime); color: var(--accent-lime); font-family: var(--font-mono); font-size: 0.65rem; padding: 2px 6px; border-radius: 4px;">
+              <span class="status-dot" style="display: inline-block; width: 6px; height: 6px; margin-right: 3px; background-color: var(--accent-lime); border-radius: 50%;"></span>ACTIVE
+            </div>
+          </div>
+          <div style="flex-grow: 1;">
+            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent-lime); text-transform: uppercase; margin-bottom: 0.25rem;">IT EXECUTIVE & CYBERSECURITY SPECIALIST</div>
+            <h3 style="font-size: 1.55rem; font-weight: 700; margin-bottom: 0.25rem;">Abhiram Anil</h3>
+            <div style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+              <i class="bi bi-mortarboard text-accent-cyan"></i> B.Tech (CSE) — A.P.J Abdul Kalam Technological University
+            </div>
+            <div style="display: flex; gap: 0.85rem; flex-wrap: wrap; font-family: var(--font-mono); font-size: 0.75rem;">
+              <a href="tel:{{ profile.phone|default:'+919656537160' }}" style="color: var(--text-muted);"><i class="bi bi-telephone text-accent-lime"></i> {{ profile.phone|default:"+91 9656537160" }}</a>
+              <span style="color: var(--text-muted);">•</span>
+              <span style="color: var(--text-muted);"><i class="bi bi-geo-alt text-accent-green"></i> {{ profile.location|default:"Kerala, India" }}</span>
+            </div>
+            <div style="display: flex; gap: 0.85rem; flex-wrap: wrap; font-family: var(--font-mono); font-size: 0.75rem; align-items: center; margin-top: 0.45rem;">
+              <a href="https://github.com/im-Abhiram" target="_blank" rel="noopener noreferrer" style="color: var(--accent-lime);" title="GitHub: im-Abhiram"><i class="bi bi-github"></i> GitHub</a>
+              <span style="color: var(--text-muted);">•</span>
+              <a href="https://www.linkedin.com/in/imabhiram/" target="_blank" rel="noopener noreferrer" style="color: #60A5FA;" title="LinkedIn: imabhiram"><i class="bi bi-linkedin"></i> LinkedIn</a>
+              <span style="color: var(--text-muted);">•</span>
+              <a href="https://www.instagram.com/im_abhiram__/" target="_blank" rel="noopener noreferrer" style="color: #F472B6;" title="Instagram: im_abhiram__"><i class="bi bi-instagram"></i> Instagram</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="editorial-text">
+          <div class="editorial-lead">
+            "Cybersecurity-driven B.Tech (CSE) graduate. Currently serving as an IT Executive, managing enterprise-level systems while pursuing specialized training in cybersecurity (threat intelligence, incident response, and network security). Proven ability to bridge the gap between core IT operations and security compliance, with a focus on mitigating vulnerabilities and hardening system architecture."
+          </div>
+
+          <p>
+            At JAIHIND TV, I oversee enterprise network connectivity, pfSense firewall routing, Cisco switch configuration, VLAN departmental isolation, and high-reliability broadcast streaming pipelines via OBS and Wirecast. I approach infrastructure with a security-first mindset: ensuring that systems are segmented, identities are strictly managed in Active Directory, and operational hardware and software remain reliably monitored.
+          </p>
+
+          <p>
+            Alongside enterprise operations, my cybersecurity background through Offenso Hackers Academy developed hands-on competencies in network reconnaissance, vulnerability assessment, port auditing using Nmap, controlled exploitation testing with Metasploit, and web application security testing using Burp Suite for XSS and SQL injection analysis.
+          </p>
+
+          <div style="display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
+            <a href="#experience" class="hud-btn">
+              <i class="bi bi-briefcase"></i> View Experience Timeline
+            </a>
+            <a href="tel:{{ profile.phone|default:'+919656537160' }}" class="hud-btn">
+              <i class="bi bi-telephone"></i> Call Directly
+            </a>
+            <a href="{% url 'download_resume' %}" class="hud-btn hud-btn-primary" download>
+              <i class="bi bi-file-earmark-arrow-down"></i> Download Resume
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Technical Focus Matrix & Academic Credentials -->
+      <div>
+        <!-- Academic Credentials Card -->
+        <div style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 1.75rem; margin-bottom: 2rem; box-shadow: var(--shadow-sm);">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent-cyan); text-transform: uppercase;">
+              <i class="bi bi-mortarboard-fill"></i> ACADEMIC EDUCATION
+            </div>
+            <span class="badge-tag">April 2025</span>
+          </div>
+          <h4 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.35rem; color: var(--text-main);">
+            Bachelor of Technology in Computer Science and Engineering
+          </h4>
+          <div style="font-size: 0.88rem; color: var(--accent-lime); margin-bottom: 0.75rem; font-family: var(--font-mono);">
+            A.P.J Abdul Kalam Technological University (Kerala, IN)
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin: 0;">
+            Rigorous engineering curriculum emphasizing computer network architectures, operating systems, relational database systems, system security, and software development.
+          </p>
+        </div>
+
+        <div class="tech-focus-matrix">
+          <h4><i class="bi bi-cpu"></i> CORE TECHNICAL CAPABILITIES</h4>
+          
+          <div class="focus-pills-container">
+            <div class="focus-pill-item">
+              <div class="focus-pill-header">
+                <span class="focus-pill-title"><i class="bi bi-hdd-network text-accent-lime"></i> Network Architecture</span>
+                <span class="badge-tag">L2 / L3</span>
+              </div>
+              <p class="focus-pill-desc">Cisco 802.1Q VLAN trunking, inter-VLAN routing, subnet allocation, and Spanning Tree resilience.</p>
+            </div>
+
+            <div class="focus-pill-item">
+              <div class="focus-pill-header">
+                <span class="focus-pill-title"><i class="bi bi-shield-lock text-accent-green"></i> Perimeter & Security</span>
+                <span class="badge-tag">Firewall & Pentest</span>
+              </div>
+              <p class="focus-pill-desc">pfSense stateful rules, NAT translation, Nmap audits, Burp Suite HTTP interception, and vulnerability remediation.</p>
+            </div>
+
+            <div class="focus-pill-item">
+              <div class="focus-pill-header">
+                <span class="focus-pill-title"><i class="bi bi-windows text-accent-cyan"></i> Systems Administration</span>
+                <span class="badge-tag">Active Directory</span>
+              </div>
+              <p class="focus-pill-desc">Windows Server, domain controllers, organizational units (OUs), Group Policies (GPO), and proactive hardware/software monitoring.</p>
+            </div>
+
+            <div class="focus-pill-item">
+              <div class="focus-pill-header">
+                <span class="focus-pill-title"><i class="bi bi-broadcast text-accent-amber"></i> Streaming Infrastructure</span>
+                <span class="badge-tag">Media Ops</span>
+              </div>
+              <p class="focus-pill-desc">RTMP and encrypted RTMPS broadcast ingests via OBS and Wirecast for high-availability live transmission.</p>
+            </div>
+
+            <div class="focus-pill-item">
+              <div class="focus-pill-header">
+                <span class="focus-pill-title"><i class="bi bi-code-slash text-accent-lime"></i> Software Development</span>
+                <span class="badge-tag">Python & Django</span>
+              </div>
+              <p class="focus-pill-desc">Full-stack web applications, infrastructure automation scripts, database schemas, and interactive tools.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- ========================================================================
+     5. SKILLS SECTION — INTERACTIVE ECOSYSTEM
+     ======================================================================== -->
+<section id="skills" class="section-padding" style="background-color: var(--bg-secondary);">
+  <div class="container-custom">
+    <div class="section-header">
+      <div class="section-pretitle">
+        <i class="bi bi-stack"></i> <span>TECHNICAL COMPETENCIES</span>
+      </div>
+      <h2 class="section-title">Operational Skills & Technologies</h2>
+      <p class="section-description">
+        Hands-on technical capabilities verified through enterprise administration, network deployments, and security auditing.
+      </p>
+    </div>
+
+    <!-- Category Filter Bar -->
+    <div class="skills-filter-bar">
+      <button type="button" class="lab-filter-btn active" data-skill-cat="all">All Disciplines</button>
+      {% for cat in skill_categories %}
+      <button type="button" class="lab-filter-btn" data-skill-cat="{{ cat.slug }}">{{ cat.name }}</button>
+      {% endfor %}
+    </div>
+
+    <!-- Skills Cluster Grid -->
+    <div class="skill-cluster-grid" id="skills-grid">
+      {% for cat in skill_categories %}
+        {% for skill in cat.skills.all %}
+        <div class="skill-card" data-cat="{{ cat.slug }}">
+          <div class="skill-card-top">
+            <span class="skill-card-name">
+              <i class="bi {{ skill.icon }} text-accent-lime"></i>
+              {{ skill.name }}
+            </span>
+            <span class="skill-card-badge">{{ skill.proficiency_tag }}</span>
+          </div>
+          <p class="skill-card-context">{{ skill.description }}</p>
+          <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); margin-top: 0.5rem;">
+            Category: {{ cat.name }}
+          </div>
+        </div>
+        {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+
+<!-- ========================================================================
+     6. EXPERIENCE SECTION — PROFESSIONAL TIMELINE
+     ======================================================================== -->
+<section id="experience" class="section-padding">
+  <div class="container-custom">
+    <div class="section-header">
+      <div class="section-pretitle">
+        <i class="bi bi-briefcase"></i> <span>CAREER TIMELINE</span>
+      </div>
+      <h2 class="section-title">Professional Experience</h2>
+      <p class="section-description">
+        Demonstrated history in broadcast infrastructure operations, perimeter network defense, and cybersecurity auditing.
+      </p>
+    </div>
+
+    <div class="timeline-wrapper">
+      {% for exp in experiences %}
+      <div class="timeline-entry">
+        <div class="timeline-node-dot"></div>
+        <div class="timeline-card">
+          <div class="timeline-header">
+            <h3 class="timeline-role">{{ exp.role }}</h3>
+            <span class="timeline-company">{{ exp.company }}</span>
+          </div>
+
+          <div class="timeline-meta">
+            <span><i class="bi bi-calendar3"></i> {{ exp.duration }}</span>
+            <span><i class="bi bi-geo-alt"></i> {{ exp.location }}</span>
+            <span class="badge-tag">{{ exp.employment_type }}</span>
+          </div>
+
+          <p class="timeline-summary">{{ exp.summary }}</p>
+
+          <ul class="timeline-bullets">
+            {% for bullet in exp.get_responsibilities_list %}
+            <li>{{ bullet }}</li>
+            {% endfor %}
+          </ul>
+
+          <div style="margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">
+              Technologies Deployed:
+            </div>
+            <div class="tech-tags-list">
+              {% for tech in exp.get_technologies_list %}
+              <span class="tech-tag">{{ tech }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+
+      {% for edu in educations %}
+      <div class="timeline-entry">
+        <div class="timeline-node-dot" style="border-color: var(--accent-cyan); box-shadow: 0 0 10px var(--accent-cyan);"></div>
+        <div class="timeline-card">
+          <div class="timeline-header">
+            <h3 class="timeline-role">{{ edu.degree }}</h3>
+            <span class="timeline-company" style="color: var(--accent-cyan);">{{ edu.institution }}</span>
+          </div>
+
+          <div class="timeline-meta">
+            <span><i class="bi bi-calendar3"></i> Graduated: {{ edu.completion_date }}</span>
+            <span><i class="bi bi-geo-alt"></i> {{ edu.location }}</span>
+            <span class="badge-tag">Academic Engineering Degree</span>
+          </div>
+
+          <p class="timeline-summary">{{ edu.description }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+
+<!-- ========================================================================
+     7. PROJECTS SHOWCASE
+     ======================================================================== -->
+<section id="projects" class="section-padding" style="background-color: var(--bg-secondary);">
+  <div class="container-custom">
+    <div class="section-header">
+      <div class="section-pretitle">
+        <i class="bi bi-terminal-split"></i> <span>FEATURED SYSTEMS</span>
+      </div>
+      <h2 class="section-title">Projects Showcase</h2>
+      <p class="section-description">
+        Full-stack web applications and network simulation platforms built using Python, Django, and modern frontend engines.
+      </p>
+    </div>
+
+    <div class="projects-grid">
+      {% for proj in projects %}
+      <div class="project-card">
+        <!-- Interactive Preview or Visual Header -->
+        <div class="project-preview-area">
+          {% if proj.has_interactive_preview %}
+          <canvas id="project-mini-canvas" class="project-mini-canvas"></canvas>
+          <div style="position: absolute; bottom: 8px; right: 12px; font-family: var(--font-mono); font-size: 0.7rem; color: var(--accent-lime); background: rgba(0,0,0,0.6); padding: 2px 6px; border-radius: 4px;">
+            <i class="bi bi-cpu"></i> INTERACTIVE SIMULATION PREVIEW
+          </div>
+          {% else %}
+          <div style="text-align: center; color: var(--text-muted); font-family: var(--font-mono); padding: 1.5rem;">
+            {% if "Flutter" in proj.technologies or "Remo" in proj.title %}
+              <i class="bi bi-phone" style="font-size: 3rem; color: var(--accent-lime); margin-bottom: 0.5rem; display: block;"></i>
+              <span>OFFLINE-FIRST MOBILE FLUTTER APP</span>
+            {% elif "6overnews" in proj.title or "Sports" in proj.category %}
+              <i class="bi bi-newspaper" style="font-size: 3rem; color: var(--accent-green); margin-bottom: 0.5rem; display: block;"></i>
+              <span>DJANGO SPORTS MEDIA PLATFORM</span>
+            {% elif "Real Estate" in proj.title %}
+              <i class="bi bi-building" style="font-size: 3rem; color: var(--accent-cyan); margin-bottom: 0.5rem; display: block;"></i>
+              <span>DJANGO REAL ESTATE PORTAL</span>
+            {% elif "Administrative" in proj.title %}
+              <i class="bi bi-people-fill" style="font-size: 3rem; color: var(--accent-lime); margin-bottom: 0.5rem; display: block;"></i>
+              <span>ENTERPRISE WORKFORCE ERP</span>
+            {% elif "Production" in proj.title %}
+              <i class="bi bi-gear-wide-connected" style="font-size: 3rem; color: var(--accent-amber); margin-bottom: 0.5rem; display: block;"></i>
+              <span>MANUFACTURING & INVENTORY ERP</span>
+            {% elif "EASEFOOD" in proj.title %}
+              <i class="bi bi-bag-check" style="font-size: 3rem; color: var(--accent-lime); margin-bottom: 0.5rem; display: block;"></i>
+              <span>DYNAMIC FOOD COMMERCE ENGINE</span>
+            {% else %}
+              <i class="bi bi-hdd-stack" style="font-size: 3rem; color: var(--accent-lime); margin-bottom: 0.5rem; display: block;"></i>
+              <span>DJANGO FULL-STACK MVT ARCHITECTURE</span>
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="project-content">
+          <div class="project-badge-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div class="project-badge">{{ proj.badge_label }}</div>
+            {% if proj.demo_url %}
+            <span class="live-deployment-tag"><span class="pulse-indicator"></span> DEPLOYED WEBAPP</span>
+            {% elif "Remo" in proj.title %}
+            <span class="live-deployment-tag flutter-tag"><span class="pulse-indicator flutter-pulse"></span> OFFLINE FLUTTER APP</span>
+            {% endif %}
+          </div>
+          <h3 class="project-title">{{ proj.title }}</h3>
+          <p class="project-summary">{{ proj.summary }}</p>
+
+          <div style="margin-bottom: 1.5rem;">
+            <div class="tech-tags-list">
+              {% for tech in proj.get_technologies_list %}
+              <span class="tech-tag">{{ tech }}</span>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="project-card-footer" style="flex-wrap: wrap; gap: 0.75rem;">
+            <div style="display: flex; gap: 0.4rem; flex-wrap: wrap;">
+              <button type="button" class="hud-btn hud-btn-primary" onclick="openProjectModal('{{ proj.slug }}')">
+                <i class="bi bi-info-circle"></i> Architecture
+              </button>
+              {% if proj.demo_url %}
+              <a href="{{ proj.demo_url }}" target="_blank" rel="noopener noreferrer" class="hud-btn hud-btn-deployed" style="padding: 0.4rem 0.75rem;" title="Open Deployed Webapp">
+                <i class="bi bi-box-arrow-up-right"></i> Deployed App
+              </a>
+              {% endif %}
+              {% if proj.github_url %}
+              <a href="{{ proj.github_url }}" target="_blank" rel="noopener noreferrer" class="hud-btn" style="padding: 0.4rem 0.65rem;" title="View Source on GitHub">
+                <i class="bi bi-github"></i> Code
+              </a>
+              {% endif %}
+            </div>
+            <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">
+              {{ proj.category }}
+            </span>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+
+<!-- ========================================================================
+     8. CERTIFICATIONS SECTION
+     ======================================================================== -->
+{% if site_settings.show_certifications and certifications %}
+<section id="certifications" class="section-padding">
+  <div class="container-custom">
+    <div class="section-header">
+      <div class="section-pretitle">
+        <i class="bi bi-patch-check"></i> <span>ACCREDITATIONS & CREDENTIALS</span>
+      </div>
+      <h2 class="section-title">Industry Certifications</h2>
+      <p class="section-description">
+        Professional certifications validating expertise in cybersecurity operations, network engineering, and Python programming.
+      </p>
+    </div>
+
+    <div class="certs-grid">
+      {% for cert in certifications %}
+      <div class="cert-card">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+            <div class="cert-issuer">{{ cert.issuer }}</div>
+            <i class="bi {{ cert.badge_icon }}" style="font-size: 1.4rem; color: var(--accent-lime);"></i>
+          </div>
+          <h3 class="cert-title">{{ cert.title }}</h3>
+          <div class="cert-skills">
+            <strong>Key Focus:</strong> {{ cert.skills_covered }}
+          </div>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45;">
+            {{ cert.description }}
+          </p>
+        </div>
+
+        <div style="border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-green);">
+            <i class="bi bi-check-circle-fill"></i> VERIFIED ({{ cert.issue_date }})
+          </span>
+          <span class="badge-tag">Accredited</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+<!-- ========================================================================
+     9. FIELD NOTES / TECHNICAL ARTICLES
+     ======================================================================== -->
+{% if site_settings.show_journal_section and blog_posts %}
+<section id="field-notes" class="section-padding" style="background-color: var(--bg-secondary);">
+  <div class="container-custom">
+    <div class="section-header">
+      <div class="section-pretitle">
+        <i class="bi bi-journal-text"></i> <span>FIELD NOTES & RESEARCH</span>
+      </div>
+      <h2 class="section-title">Technical Field Notes</h2>
+      <p class="section-description">
+        Deep dives into network architecture, perimeter hardening, and IT operational triage.
+      </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2rem;">
+      {% for post in blog_posts %}
+      <div style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 2rem; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <span class="badge-tag" style="margin-bottom: 0.75rem; display: inline-block;">{{ post.category.name }}</span>
+          <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem;">
+            <a href="{% url 'journal:detail' post.slug %}" style="color: var(--text-main);">{{ post.title }}</a>
+          </h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: 1.25rem;">
+            {{ post.summary }}
+          </p>
+        </div>
+
+        <div style="border-top: 1px solid var(--border-color); padding-top: 1rem; display: flex; align-items: center; justify-content: space-between; font-family: var(--font-mono); font-size: 0.75rem;">
+          <span style="color: var(--text-muted);"><i class="bi bi-clock"></i> {{ post.read_time_minutes }} min read</span>
+          <a href="{% url 'journal:detail' post.slug %}" style="color: var(--accent-lime); font-weight: 600;">
+            Read Note <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+
+<!-- ========================================================================
+     8. CYBERSECURITY OPERATIONS & DEFENSIVE SECURITY
+     ======================================================================== -->
+<section id="security" class="section-padding">
+  <div class="container-custom">
+    <div class="section-header">
+      <div class="section-pretitle">
+        <i class="bi bi-shield-shaded"></i> <span>SECURITY OPERATIONS & THREAT RESEARCH</span>
+      </div>
+      <h2 class="section-title">Defensive Security & Vulnerability Assessment</h2>
+      <p class="section-description">
+        Practical offensive and defensive security practices developed through my Cybersecurity Internship at Offenso Hackers Academy, focusing on vulnerability assessment, network reconnaissance, and secure web architectures.
+      </p>
+    </div>
+
+    <!-- 1. Defensive Security Concepts Module -->
+    <div class="sec-concepts-wrapper" style="margin-bottom: 3.5rem;">
+      <div style="margin-bottom: 1.5rem;">
+        <h3 style="font-size: 1.5rem; margin-bottom: 0.25rem;"><i class="bi bi-shield-lock-fill text-accent-green"></i> Defensive Security Concepts Module</h3>
+        <p style="font-size: 0.9rem; color: var(--text-secondary);">
+          Educational analysis of critical vulnerabilities, root causes, defensive remediation, and SIEM/WAF detection strategies.
+        </p>
+      </div>
+
+      <div class="sec-concepts-list">
+        {% for concept in security_concepts %}
+        <div class="concept-item {% if forloop.first %}open{% endif %}">
+          <div class="concept-header">
+            <div class="concept-title-group" style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+              <span class="badge-tag">{{ concept.owasp_reference }}</span>
+              <span class="concept-title">{{ concept.title }}</span>
+              {% if "A03" in concept.owasp_reference %}
+              <span class="threat-badge threat-critical">CRITICAL SEVERITY</span>
+              {% elif "A01" in concept.owasp_reference or "A07" in concept.owasp_reference %}
+              <span class="threat-badge threat-high">HIGH SEVERITY</span>
+              {% else %}
+              <span class="threat-badge threat-medium">MEDIUM SEVERITY</span>
+              {% endif %}
+            </div>
+            <i class="bi bi-chevron-down concept-toggle-icon"></i>
+          </div>
+
+          <div class="concept-body">
+            <p>{{ concept.what_it_is }}</p>
+
+            <div class="concept-grid-details">
+              <div class="concept-box">
+                <div class="concept-box-label">Root Cause / Why It Occurs</div>
+                <div style="color: var(--text-secondary); font-size: 0.88rem;">{{ concept.why_it_occurs }}</div>
+              </div>
+              <div class="concept-box">
+                <div class="concept-box-label" style="color: var(--accent-red);">Exploitation Impact</div>
+                <div style="color: var(--text-secondary); font-size: 0.88rem;">{{ concept.impact }}</div>
+              </div>
+              <div class="concept-box">
+                <div class="concept-box-label" style="color: var(--accent-lime);">Defensive Prevention / Remediation</div>
+                <div style="color: var(--text-main); font-size: 0.88rem;">{{ concept.prevention }}</div>
+              </div>
+              <div class="concept-box">
+                <div class="concept-box-label" style="color: var(--accent-cyan);">Detection & Logging Strategy</div>
+                <div style="color: var(--text-secondary); font-size: 0.88rem;">{{ concept.defensive_detection_idea }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- 2. Defensive Engineering & Vulnerability Assessment: 8 Tool Cards -->
+    <div style="margin-bottom: 2rem;">
+      <h3 style="font-size: 1.4rem; margin-bottom: 0.35rem;"><i class="bi bi-tools text-accent-green"></i> Defensive Engineering & Vulnerability Assessment</h3>
+      <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1.25rem;">Auditing & reconnaissance toolchain applied in active security labs and network audits.</p>
+    </div>
+
+    <div class="sec-tools-grid">
+      {% for tool in security_tools %}
+      <div class="sec-tool-card">
+        <div class="sec-tool-header">
+          <span class="sec-tool-name">{{ tool.name }}</span>
+          <i class="bi {{ tool.icon_class }} sec-tool-icon"></i>
+        </div>
+        <p class="sec-tool-purpose">{{ tool.purpose }}</p>
+        <div class="sec-tool-experience">
+          <strong>Applied Experience:</strong> {{ tool.how_i_used_it }}
+        </div>
+        {% if tool.typical_syntax %}
+        <div class="sec-tool-cli" title="Typical syntax">
+          <code>$ {{ tool.typical_syntax }}</code>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Activity Wall / Security Field Notes -->
+    {% if site_settings.show_activity_wall and security_notes %}
+    <div style="margin-top: 4rem;">
+      <h3 style="font-size: 1.4rem; margin-bottom: 1.25rem;"><i class="bi bi-journal-text text-accent-lime"></i> Cybersecurity Activity Wall & Lab Observations</h3>
+      
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem;">
+        {% for note in security_notes %}
+        <div style="background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.35rem; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--accent-lime); text-transform: uppercase; margin-bottom: 0.5rem;">
+              {{ note.get_category_display }}
+            </div>
+            <h4 style="font-size: 1.1rem; margin-bottom: 0.6rem;">{{ note.title }}</h4>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">{{ note.summary }}</p>
+          </div>
+          <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); border-top: 1px solid var(--border-color); padding-top: 0.75rem;">
+            Recorded: {{ note.date_recorded|date:"M d, Y" }}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+
+<!-- ========================================================================
+     9. NETWORK & INFRASTRUCTURE LAB — INTERACTIVE EXPLORATION
+     ======================================================================== -->
+{% if site_settings.show_lab_section %}
+<section id="lab" class="section-padding" style="background-color: var(--bg-secondary);">
+  <div class="container-custom">
+    <div class="section-header">
+      <div class="section-pretitle">
+        <i class="bi bi-cpu-fill"></i> <span>SYSTEMS & PROTOCOLS LAB</span>
+      </div>
+      <h2 class="section-title">OSI Diagnostics, Networking Knowledge & Infrastructure Lab</h2>
+      <p class="section-description">
+        Explore simulated enterprise topologies, bitwise IPv4 subnet calculations, protocol data unit mechanics, and core network services.
+      </p>
+    </div>
+
+    <!-- 3. OSI 7-Layer Visual Diagnostic Stack -->
+    <div class="osi-container" style="margin-bottom: 4.5rem;">
+      <div style="margin-bottom: 1.5rem;">
+        <h3 style="font-size: 1.6rem; margin-bottom: 0.25rem;"><i class="bi bi-layers-half text-accent-lime"></i> OSI 7-Layer Visual Diagnostic Stack</h3>
+        <p style="font-size: 0.9rem; color: var(--text-secondary);">
+          Select a layer to examine Protocol Data Units (PDU), standard protocols, enterprise hardware, and troubleshooting scenarios.
+        </p>
+      </div>
+
+      <div class="osi-layout-grid">
+        <!-- Clickable Layer Stack -->
+        <div class="osi-stack">
+          <button type="button" class="osi-layer-btn active" data-layer="7">
+            <div>
+              <span class="osi-layer-num">L7</span>
+              <span class="osi-layer-name">Application</span>
+            </div>
+            <span class="osi-layer-pdu">Data</span>
+          </button>
+          <button type="button" class="osi-layer-btn" data-layer="6">
+            <div>
+              <span class="osi-layer-num">L6</span>
+              <span class="osi-layer-name">Presentation</span>
+            </div>
+            <span class="osi-layer-pdu">Data</span>
+          </button>
+          <button type="button" class="osi-layer-btn" data-layer="5">
+            <div>
+              <span class="osi-layer-num">L5</span>
+              <span class="osi-layer-name">Session</span>
+            </div>
+            <span class="osi-layer-pdu">Data</span>
+          </button>
+          <button type="button" class="osi-layer-btn" data-layer="4">
+            <div>
+              <span class="osi-layer-num">L4</span>
+              <span class="osi-layer-name">Transport</span>
+            </div>
+            <span class="osi-layer-pdu">Segment / Datagram</span>
+          </button>
+          <button type="button" class="osi-layer-btn" data-layer="3">
+            <div>
+              <span class="osi-layer-num">L3</span>
+              <span class="osi-layer-name">Network</span>
+            </div>
+            <span class="osi-layer-pdu">Packet</span>
+          </button>
+          <button type="button" class="osi-layer-btn" data-layer="2">
+            <div>
+              <span class="osi-layer-num">L2</span>
+              <span class="osi-layer-name">Data Link</span>
+            </div>
+            <span class="osi-layer-pdu">Frame</span>
+          </button>
+          <button type="button" class="osi-layer-btn" data-layer="1">
+            <div>
+              <span class="osi-layer-num">L1</span>
+              <span class="osi-layer-name">Physical</span>
+            </div>
+            <span class="osi-layer-pdu">Bits</span>
+          </button>
+        </div>
+
+        <!-- Layer Details Inspector -->
+        <div class="osi-detail-box">
+          <div class="osi-detail-header">
+            <h4 id="osi-inspect-title" class="osi-detail-title">Layer 7: Application Layer</h4>
+            <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted);">
+              PDU: <span id="osi-inspect-pdu" style="color: var(--accent-green); font-weight: 700;">Data</span>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 1.25rem;">
+            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Primary Functions:</div>
+            <p id="osi-inspect-functions" style="font-size: 0.92rem; color: var(--text-main); margin-top: 0.25rem;">
+              Direct interface between end-user applications and underlying network services. Initiates and manages network requests.
+            </p>
+          </div>
+
+          <div style="margin-bottom: 1.25rem;">
+            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Standard Protocols:</div>
+            <div id="osi-inspect-protocols" style="font-family: var(--font-mono); font-size: 0.82rem; color: var(--accent-lime); margin-top: 0.25rem;">
+              HTTP, HTTPS, DNS, DHCP, SSH, FTP, SMTP, RTMP, RTMPS, SNMP, Telnet
+            </div>
+          </div>
+
+          <div style="margin-bottom: 1.25rem;">
+            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Associated Devices:</div>
+            <div id="osi-inspect-devices" style="font-size: 0.88rem; color: var(--text-secondary); margin-top: 0.25rem;">
+              Application Proxies, Web Application Firewalls (WAF), Load Balancers, API Gateways
+            </div>
+          </div>
+
+          <div>
+            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent-amber); text-transform: uppercase;">Troubleshooting Scenario:</div>
+            <p id="osi-inspect-scenario" style="font-size: 0.88rem; color: var(--text-main); margin-top: 0.25rem;">
+              A user receives an HTTP 502 Bad Gateway or DNS NXDOMAIN. Bottom layers are functioning, but the application service daemon or upstream reverse proxy is down.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Networking Knowledge Explorer -->
+    <div style="margin-bottom: 4.5rem;">
+      <div style="margin-bottom: 2rem;">
+        <h3 style="font-size: 1.8rem; margin-bottom: 0.5rem;"><i class="bi bi-journal-code text-accent-lime"></i> Networking Knowledge Explorer</h3>
+        <p style="color: var(--text-secondary); max-width: 650px;">
+          Click any protocol, architecture, or service card to inspect operational mechanics, enterprise configurations, and diagnostic triage procedures.
+        </p>
+      </div>
+
+      <div class="topics-grid">
+        {% for topic in network_topics %}
+        <div class="topic-card" data-topic-id="{{ topic.id }}" onclick="openTopicModal('{{ topic.slug }}')">
+          <div>
+            <div class="topic-badge">{{ topic.badge_tag }}</div>
+            <h4 class="topic-title">{{ topic.title }}</h4>
+            <p class="topic-excerpt">{{ topic.short_explanation|truncatewords:18 }}</p>
+          </div>
+          <div class="topic-footer">
+            <span>Tools: {{ topic.relevant_tools|truncatewords:3 }}</span>
+            <span>Inspect <i class="bi bi-arrow-right"></i></span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- 5. Interactive Network & Infrastructure Lab: Simulated Topology & Subnet Engine -->
+    <div style="margin-bottom: 2rem;">
+      <h3 style="font-size: 1.8rem; margin-bottom: 0.5rem;"><i class="bi bi-diagram-3-fill text-accent-lime"></i> Interactive Network & Infrastructure Lab</h3>
+      <p style="color: var(--text-secondary); max-width: 650px;">
+        Simulated enterprise network architecture featuring perimeter firewalls, Cisco core switching, and VLAN segmentation.
+      </p>
+    </div>
+
+    <!-- Main Lab Architecture Container -->
+    <div class="lab-container">
+      <!-- Lab Toolbar -->
+      <div class="lab-toolbar">
+        <div class="lab-filters">
+          <button type="button" class="lab-filter-btn active" data-vlan="all">All Architecture</button>
+          <button type="button" class="lab-filter-btn" data-vlan="vlan10">VLAN 10: IT Mgt</button>
+          <button type="button" class="lab-filter-btn" data-vlan="vlan20">VLAN 20: Admin</button>
+          <button type="button" class="lab-filter-btn" data-vlan="vlan30">VLAN 30: Broadcast</button>
+          <button type="button" class="lab-filter-btn" data-vlan="vlan40">VLAN 40: Guest</button>
+        </div>
+
+        <div class="lab-actions">
+          <span class="simulated-disclaimer-pill">
+            <i class="bi bi-info-circle"></i> Simulated Educational Model
+          </span>
+          <button type="button" id="topo-view-toggle" class="hud-btn" style="padding: 0.35rem 0.75rem;">
+            <i class="bi bi-diagram-3"></i> View: Logical
+          </button>
+          <button type="button" id="topo-sim-packet" class="hud-btn hud-btn-primary" style="padding: 0.35rem 0.75rem;">
+            <i class="bi bi-play-circle"></i> Simulate Packet Traversal
+          </button>
+          <button type="button" id="topo-reset-btn" class="hud-btn" style="padding: 0.35rem 0.75rem;" title="Reset view">
+            <i class="bi bi-arrow-counterclockwise"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- SVG Topology Viewport -->
+      <div class="topology-viewport" id="topology-container">
+        <svg id="topology-svg" viewBox="0 0 900 520" preserveAspectRatio="xMidYMid meet"></svg>
+
+        <!-- Slide-out Node Inspector Drawer -->
+        <div id="node-inspector" class="node-inspector-drawer">
+          <div class="inspector-header">
+            <div>
+              <div style="font-size: 0.68rem; color: var(--accent-lime);">NODE TELEMETRY INSPECTOR</div>
+              <div id="inspector-device-name" style="font-weight: 700; color: #FFFFFF; font-size: 0.95rem;">-</div>
+            </div>
+            <button type="button" class="inspector-close" id="inspector-close-btn">&times;</button>
+          </div>
+
+          <div class="inspector-row">
+            <span class="inspector-key">Device Type:</span>
+            <span class="inspector-val" id="inspector-device-type">-</span>
+          </div>
+          <div class="inspector-row">
+            <span class="inspector-key">Operational Role:</span>
+            <span class="inspector-val" id="inspector-role">-</span>
+          </div>
+          <div class="inspector-row">
+            <span class="inspector-key">Simulated IP:</span>
+            <span class="inspector-val" id="inspector-ip">-</span>
+          </div>
+          <div class="inspector-row">
+            <span class="inspector-key">VLAN Segment:</span>
+            <span class="inspector-val" id="inspector-vlan">-</span>
+          </div>
+          <div class="inspector-row">
+            <span class="inspector-key">Interface State:</span>
+            <span class="inspector-val" id="inspector-status" style="color: var(--accent-green);">-</span>
+          </div>
+          
+          <div style="margin-top: 0.75rem; font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4;" id="inspector-desc">
+            Click any network node or link to inspect routing and security parameters.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Subnet Calculator Tool -->
+    <div class="subnet-calc-card">
+      <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem;">
+        <div>
+          <h3 style="font-size: 1.5rem; margin-bottom: 0.25rem;"><i class="bi bi-calculator text-accent-lime"></i> Interactive IPv4 Subnetting Engine</h3>
+          <p style="font-size: 0.88rem; color: var(--text-secondary); margin: 0;">Perform instant bitwise address calculations, mask derivations, and host range analysis.</p>
+        </div>
+        <span class="badge-tag">RFC 1878 / CIDR</span>
+      </div>
+
+      <!-- Quick Preset Shortcuts -->
+      <div class="subnet-presets">
+        <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); align-self: center;">PRESETS:</span>
+        <button type="button" class="preset-pill" data-ip="192.168.10.0" data-cidr="24">/24 Corporate LAN (254 hosts)</button>
+        <button type="button" class="preset-pill" data-ip="172.16.50.0" data-cidr="26">/26 Department Subnet (62 hosts)</button>
+        <button type="button" class="preset-pill" data-ip="10.0.100.0" data-cidr="28">/28 Server Farm (14 hosts)</button>
+        <button type="button" class="preset-pill" data-ip="198.51.100.0" data-cidr="30">/30 Point-to-Point WAN Link (2 hosts)</button>
+      </div>
+
+      <!-- Input Form Grid -->
+      <div class="subnet-form-grid">
+        <div class="form-group">
+          <label for="calc-ip-input">IPv4 Address (Dotted Decimal)</label>
+          <input type="text" id="calc-ip-input" class="noc-input" value="192.168.10.0" placeholder="e.g. 192.168.10.0">
+        </div>
+
+        <div class="form-group">
+          <label for="calc-cidr-select">Subnet Mask / Prefix (CIDR)</label>
+          <select id="calc-cidr-select" class="noc-input">
+            <option value="8">/8 — 255.0.0.0 (16.7M hosts)</option>
+            <option value="16">/16 — 255.255.0.0 (65,534 hosts)</option>
+            <option value="20">/20 — 255.255.240.0 (4,094 hosts)</option>
+            <option value="22">/22 — 255.255.252.0 (1,022 hosts)</option>
+            <option value="23">/23 — 255.255.254.0 (510 hosts)</option>
+            <option value="24" selected>/24 — 255.255.255.0 (254 hosts)</option>
+            <option value="25">/25 — 255.255.255.128 (126 hosts)</option>
+            <option value="26">/26 — 255.255.255.192 (62 hosts)</option>
+            <option value="27">/27 — 255.255.255.224 (30 hosts)</option>
+            <option value="28">/28 — 255.255.255.240 (14 hosts)</option>
+            <option value="29">/29 — 255.255.255.248 (6 hosts)</option>
+            <option value="30">/30 — 255.255.255.252 (2 hosts - WAN)</option>
+            <option value="31">/31 — 255.255.255.254 (2 hosts - RFC 3021)</option>
+            <option value="32">/32 — 255.255.255.255 (Single Host)</option>
+          </select>
+        </div>
+
+        <button type="button" id="calc-execute-btn" class="hud-btn hud-btn-primary" style="height: 44px;">
+          <i class="bi bi-arrow-repeat"></i> Calculate
+        </button>
+      </div>
+
+      <!-- Error Notification -->
+      <div id="calc-error-msg" class="alert-box alert-error" style="display: none;"></div>
+
+      <!-- Results Display Grid -->
+      <div class="calc-results-grid">
+        <div class="calc-stat-box">
+          <span class="calc-stat-label">Network ID:</span>
+          <span class="calc-stat-value" id="res-network">192.168.10.0 /24</span>
+        </div>
+        <div class="calc-stat-box">
+          <span class="calc-stat-label">Subnet Mask:</span>
+          <span class="calc-stat-value" id="res-netmask">255.255.255.0</span>
+        </div>
+        <div class="calc-stat-box">
+          <span class="calc-stat-label">Wildcard Mask:</span>
+          <span class="calc-stat-value" id="res-wildcard">0.0.0.255</span>
+        </div>
+        <div class="calc-stat-box">
+          <span class="calc-stat-label">Broadcast IP:</span>
+          <span class="calc-stat-value" id="res-broadcast">192.168.10.255</span>
+        </div>
+
+        <div class="calc-stat-box">
+          <span class="calc-stat-label">Total Addresses:</span>
+          <span class="calc-stat-value" id="res-total-hosts">256</span>
+        </div>
+        <div class="calc-stat-box">
+          <span class="calc-stat-label">Usable Host Pool:</span>
+          <span class="calc-stat-value" id="res-usable-hosts">254</span>
+        </div>
+        <div class="calc-stat-box">
+          <span class="calc-stat-label">First Usable Host:</span>
+          <span class="calc-stat-value" id="res-first-usable">192.168.10.1</span>
+        </div>
+        <div class="calc-stat-box">
+          <span class="calc-stat-label">Last Usable Host:</span>
+          <span class="calc-stat-value" id="res-last-usable">192.168.10.254</span>
+        </div>
+
+        <!-- Binary Breakdown Representation -->
+        <div class="binary-breakdown-box">
+          <div class="binary-row">
+            <span style="color: var(--text-muted);">Binary Network:</span>
+            <span id="res-binary-network" class="binary-network-bits">11000000.10101000.00001010.00000000</span>
+          </div>
+          <div class="binary-row">
+            <span style="color: var(--text-muted);">Binary Netmask:</span>
+            <span id="res-binary-mask" class="binary-network-bits">11111111.11111111.11111111.00000000</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+
+<!-- ========================================================================
+     10. CONTACT SECTION & SECURE FORM
+     ======================================================================== -->
+<section id="contact" class="section-padding">
+  <div class="container-custom">
+    <div class="section-header">
+      <div class="section-pretitle">
+        <i class="bi bi-broadcast-pin"></i> <span>TRANSMISSION CHANNEL</span>
+      </div>
+      <h2 class="section-title">Initiate Contact</h2>
+      <p class="section-description">
+        Open for IT infrastructure engineering consultations, enterprise network troubleshooting, and cybersecurity collaboration.
+      </p>
+    </div>
+
+    <div class="contact-grid">
+      <!-- Contact Info Card -->
+      <div class="contact-info-card">
+        <h3 style="font-size: 1.4rem; margin-bottom: 1.5rem;"><i class="bi bi-person-lines-fill text-accent-lime"></i> Direct Coordinates</h3>
+
+        <div class="contact-method-item">
+          <div class="contact-icon-box">
+            <i class="bi bi-envelope"></i>
+          </div>
+          <div>
+            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Direct Email</div>
+            <div style="font-weight: 600; color: var(--text-main); margin-bottom: 0.35rem;">{{ profile.email|default:"abhiramanil74@gmail.com" }}</div>
+            <button type="button" class="hud-btn" style="padding: 0.25rem 0.6rem; font-size: 0.72rem;" data-copy="{{ profile.email|default:'abhiramanil74@gmail.com' }}">
+              <i class="bi bi-clipboard"></i> Copy Email
+            </button>
+          </div>
+        </div>
+
+        <div class="contact-method-item">
+          <div class="contact-icon-box">
+            <i class="bi bi-telephone"></i>
+          </div>
+          <div>
+            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Direct Phone / Mobile</div>
+            <div style="font-weight: 600; color: var(--text-main); margin-bottom: 0.35rem;">{{ profile.phone|default:"+91 9656537160" }}</div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <a href="tel:{{ profile.phone|default:'+919656537160' }}" class="hud-btn" style="padding: 0.25rem 0.6rem; font-size: 0.72rem;">
+                <i class="bi bi-telephone-outbound"></i> Call Direct
+              </a>
+              <button type="button" class="hud-btn" style="padding: 0.25rem 0.6rem; font-size: 0.72rem;" data-copy="{{ profile.phone|default:'+91 9656537160' }}">
+                <i class="bi bi-clipboard"></i> Copy Number
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="contact-method-item">
+          <div class="contact-icon-box">
+            <i class="bi bi-geo-alt"></i>
+          </div>
+          <div>
+            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Location & Timezone</div>
+            <div style="font-weight: 600; color: var(--text-main);">{{ profile.location|default:"Kerala, India" }}</div>
+            <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent-lime); margin-top: 0.2rem;">UTC+05:30 (Indian Standard Time)</div>
+          </div>
+        </div>
+
+        <div class="contact-method-item">
+          <div class="contact-icon-box">
+            <i class="bi bi-shield-check"></i>
+          </div>
+          <div>
+            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Security Protocol</div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary);">
+              Server-side rate limiting active. CSRF protected. Zero unsolicited commercial data retention.
+            </div>
+          </div>
+        </div>
+
+        <div class="contact-method-item">
+          <div class="contact-icon-box">
+            <i class="bi bi-share"></i>
+          </div>
+          <div>
+            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Professional & Social Channels</div>
+            <div style="display: flex; gap: 0.6rem; margin-top: 0.5rem; flex-wrap: wrap;">
+              <a href="https://github.com/im-Abhiram" target="_blank" rel="noopener noreferrer" class="hud-btn" style="padding: 0.35rem 0.7rem; font-size: 0.75rem;">
+                <i class="bi bi-github"></i> GitHub
+              </a>
+              <a href="https://www.linkedin.com/in/imabhiram/" target="_blank" rel="noopener noreferrer" class="hud-btn" style="padding: 0.35rem 0.7rem; font-size: 0.75rem;">
+                <i class="bi bi-linkedin"></i> LinkedIn
+              </a>
+              <a href="https://www.instagram.com/im_abhiram__/" target="_blank" rel="noopener noreferrer" class="hud-btn" style="padding: 0.35rem 0.7rem; font-size: 0.75rem;">
+                <i class="bi bi-instagram"></i> Instagram
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Secure Contact Form -->
+      <div class="contact-form-card">
+        <h3 style="font-size: 1.4rem; margin-bottom: 1.5rem;"><i class="bi bi-send text-accent-lime"></i> Send Secure Message</h3>
+
+        <div id="contact-alert-container">
+          {% if messages %}
+            {% for msg in messages %}
+            <div class="alert-box {% if msg.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+              <i class="bi {% if msg.tags == 'error' %}bi-exclamation-triangle-fill{% else %}bi-check-circle-fill{% endif %}"></i>
+              <span>{{ msg }}</span>
+            </div>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <form id="contact-form" action="{% url 'contact:submit' %}" method="POST">
+          {% csrf_token %}
+
+          <!-- Honeypot anti-spam field -->
+          {{ contact_form.website_url }}
+
+          <div class="form-group">
+            <label for="{{ contact_form.name.id_for_label }}">Full Name / Identity</label>
+            {{ contact_form.name }}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ contact_form.email.id_for_label }}">Return Email Address</label>
+            {{ contact_form.email }}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ contact_form.subject.id_for_label }}">Mission / Subject</label>
+            {{ contact_form.subject }}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ contact_form.message.id_for_label }}">Message Payload</label>
+            {{ contact_form.message }}
+          </div>
+
+          <button type="submit" class="hud-btn hud-btn-primary" style="width: 100%; height: 48px; justify-content: center; font-size: 0.95rem;">
+            <i class="bi bi-send-fill"></i> Transmit Payload
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ========================================================================
+     MODALS: PROJECT ARCHITECTURE & NETWORKING KNOWLEDGE INSPECTORS
+     ======================================================================== -->
+<!-- Project Modal -->
+<div id="project-detail-modal" class="noc-modal-backdrop" role="dialog" aria-modal="true" aria-label="Project Details">
+  <div class="noc-modal-dialog">
+    <button type="button" class="modal-close-btn" aria-label="Close modal">&times;</button>
+    <div id="project-modal-content">
+      <!-- Populated via JavaScript -->
+    </div>
+  </div>
+</div>
+
+<!-- Networking Topic Modal -->
+<div id="topic-detail-modal" class="noc-modal-backdrop" role="dialog" aria-modal="true" aria-label="Topic Details">
+  <div class="noc-modal-dialog">
+    <button type="button" class="modal-close-btn" aria-label="Close modal">&times;</button>
+    <div id="topic-modal-content">
+      <!-- Populated via JavaScript -->
+    </div>
+  </div>
+</div>
+
+<!-- Hidden Embedded Data for Instant Offline Modals -->
+<script id="projects-json-data" type="application/json">
+{
+  {% for proj in projects %}
+  "{{ proj.slug }}": {
+    "title": "{{ proj.title|escapejs }}",
+    "category": "{{ proj.category|escapejs }}",
+    "badge_label": "{{ proj.badge_label|escapejs }}",
+    "summary": "{{ proj.summary|escapejs }}",
+    "architecture": "{{ proj.architecture|escapejs }}",
+    "demo_url": "{{ proj.demo_url|default:''|escapejs }}",
+    "github_url": "{{ proj.github_url|default:''|escapejs }}",
+    "features": [{% for f in proj.get_features_list %}"{{ f|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}],
+    "challenges": "{{ proj.challenges_and_solutions|escapejs }}",
+    "technologies": [{% for t in proj.get_technologies_list %}"{{ t|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}]
+  }{% if not forloop.last %},{% endif %}
+  {% endfor %}
+}
+</script>
+
+<script id="topics-json-data" type="application/json">
+{
+  {% for topic in network_topics %}
+  "{{ topic.slug }}": {
+    "title": "{{ topic.title|escapejs }}",
+    "badge_tag": "{{ topic.badge_tag|escapejs }}",
+    "short_explanation": "{{ topic.short_explanation|escapejs }}",
+    "how_it_works": "{{ topic.how_it_works|escapejs }}",
+    "practical_use": "{{ topic.practical_use|escapejs }}",
+    "troubleshooting_tip": "{{ topic.troubleshooting_tip|escapejs }}",
+    "relevant_tools": "{{ topic.relevant_tools|escapejs }}"
+  }{% if not forloop.last %},{% endif %}
+  {% endfor %}
+}
+</script>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- Hero Network Canvas -->
+<script src="{% static 'js/network-viz.js' %}"></script>
+<!-- Project 01 Mini Canvas -->
+<script src="{% static 'js/project-canvas.js' %}"></script>
+<!-- Simulated Topology Explorer -->
+<script src="{% static 'js/topology-explorer.js' %}"></script>
+<!-- IPv4 Subnet Calculator -->
+<script src="{% static 'js/subnet-calculator.js' %}"></script>
+<!-- OSI 7-Layer Visual Stack -->
+<script src="{% static 'js/osi-stack.js' %}"></script>
+
+<script>
+// Modal Population Logic using embedded data
+const projectsData = JSON.parse(document.getElementById('projects-json-data').textContent || '{}');
+const topicsData = JSON.parse(document.getElementById('topics-json-data').textContent || '{}');
+
+function openProjectModal(slug) {
+  const proj = projectsData[slug];
+  if (!proj) return;
+
+  const content = document.getElementById('project-modal-content');
+  const modal = document.getElementById('project-detail-modal');
+
+  let featuresHtml = proj.features.map(f => `<li>${f}</li>`).join('');
+  let techHtml = proj.technologies.map(t => `<span class="tech-tag">${t}</span>`).join('');
+
+  let linksHtml = '';
+  if (proj.demo_url || proj.github_url) {
+    linksHtml = `
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+        ${proj.demo_url ? `<a href="${proj.demo_url}" target="_blank" rel="noopener noreferrer" class="hud-btn hud-btn-primary"><i class="bi bi-box-arrow-up-right"></i> Launch Deployed Webapp</a>` : ''}
+        ${proj.github_url ? `<a href="${proj.github_url}" target="_blank" rel="noopener noreferrer" class="hud-btn"><i class="bi bi-github"></i> View GitHub Repository</a>` : ''}
+      </div>
+    `;
+  }
+
+  content.innerHTML = `
+    <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent-lime); margin-bottom: 0.4rem;">${proj.badge_label}</div>
+    <h3 style="font-size: 1.8rem; margin-bottom: 1rem;">${proj.title}</h3>
+    <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">${proj.summary}</p>
+    
+    <div style="margin-bottom: 1.5rem;">
+      <h4 style="font-size: 1.1rem; color: var(--accent-lime); margin-bottom: 0.5rem;"><i class="bi bi-diagram-3"></i> System Architecture</h4>
+      <p style="font-size: 0.92rem; color: var(--text-main); line-height: 1.6;">${proj.architecture}</p>
+    </div>
+
+    <div style="margin-bottom: 1.5rem;">
+      <h4 style="font-size: 1.1rem; color: var(--accent-lime); margin-bottom: 0.5rem;"><i class="bi bi-check2-square"></i> Key Engineering Features</h4>
+      <ul class="timeline-bullets" style="padding-left: 0.5rem;">${featuresHtml}</ul>
+    </div>
+
+    <div style="margin-bottom: 1.5rem;">
+      <h4 style="font-size: 1.1rem; color: var(--accent-lime); margin-bottom: 0.5rem;"><i class="bi bi-wrench"></i> Engineering Challenges Solved</h4>
+      <p style="font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6;">${proj.challenges}</p>
+    </div>
+
+    <div style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
+      <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); margin-bottom: 0.5rem;">TECHNOLOGIES</div>
+      <div class="tech-tags-list">${techHtml}</div>
+    </div>
+
+    ${linksHtml}
+  `;
+
+  modal.classList.add('open');
+}
+
+function openTopicModal(slug) {
+  const topic = topicsData[slug];
+  if (!topic) return;
+
+  const content = document.getElementById('topic-modal-content');
+  const modal = document.getElementById('topic-detail-modal');
+
+  content.innerHTML = `
+    <div class="badge-tag" style="margin-bottom: 0.5rem;">${topic.badge_tag}</div>
+    <h3 style="font-size: 1.8rem; margin-bottom: 0.75rem;">${topic.title}</h3>
+    <p style="font-size: 1rem; color: var(--text-main); line-height: 1.6; margin-bottom: 1.5rem;">${topic.short_explanation}</p>
+
+    <div style="margin-bottom: 1.5rem;">
+      <h4 style="font-size: 1.1rem; color: var(--accent-lime); margin-bottom: 0.4rem;"><i class="bi bi-gear-wide-connected"></i> How It Works</h4>
+      <p style="font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6;">${topic.how_it_works}</p>
+    </div>
+
+    <div style="margin-bottom: 1.5rem;">
+      <h4 style="font-size: 1.1rem; color: var(--accent-lime); margin-bottom: 0.4rem;"><i class="bi bi-briefcase"></i> Practical Enterprise Use</h4>
+      <p style="font-size: 0.92rem; color: var(--text-secondary); line-height: 1.6;">${topic.practical_use}</p>
+    </div>
+
+    <div style="margin-bottom: 1.5rem; background-color: var(--bg-secondary); border-left: 3px solid var(--accent-amber); padding: 1rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;">
+      <h4 style="font-size: 1rem; color: var(--accent-amber); margin-bottom: 0.25rem;"><i class="bi bi-lightbulb"></i> Troubleshooting Tip</h4>
+      <p style="font-size: 0.88rem; color: var(--text-main); margin: 0;">${topic.troubleshooting_tip}</p>
+    </div>
+
+    <div style="border-top: 1px solid var(--border-color); padding-top: 1rem; font-family: var(--font-mono); font-size: 0.8rem;">
+      <span style="color: var(--text-muted);">DIAGNOSTIC TOOLS:</span>
+      <span style="color: var(--accent-lime); margin-left: 0.5rem;">${topic.relevant_tools}</span>
+    </div>
+  `;
+
+  modal.classList.add('open');
+}
+
+// Skills Category Filter Button Handler
+document.querySelectorAll('.skills-filter-bar .lab-filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.skills-filter-bar .lab-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const cat = btn.getAttribute('data-skill-cat');
+
+    document.querySelectorAll('#skills-grid .skill-card').forEach(card => {
+      if (cat === 'all' || card.getAttribute('data-cat') === cat) {
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  });
+});
+</script>
+{% endblock %}

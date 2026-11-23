@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="section-padding" style="min-height: 80vh; display: flex; align-items: center;">
+  <div class="container-custom" style="text-align: center;">
+    <div style="max-width: 650px; margin: 0 auto; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: 3.5rem 2rem; box-shadow: var(--shadow-lg);">
+      <div style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent-red); margin-bottom: 1rem;">
+        <i class="bi bi-shield-x"></i> ICMP_DEST_UNREACHABLE // CODE: 404
+      </div>
+      
+      <h1 style="font-size: 5rem; font-weight: 800; color: var(--accent-lime); margin-bottom: 0.5rem; letter-spacing: -0.05em;">
+        404
+      </h1>
+
+      <h2 style="font-size: 1.6rem; margin-bottom: 1rem;">Packet Dropped: Host Unreachable</h2>
+
+      <p style="color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.6;">
+        The requested routing path or endpoint does not exist on this network segment. The packet reached the perimeter firewall but was dropped by default deny rules.
+      </p>
+
+      <div style="display: flex; justify-content: center; gap: 1rem;">
+        <a href="{% url 'home' %}" class="hud-btn hud-btn-primary">
+          <i class="bi bi-house"></i> Return to Default Gateway
+        </a>
+        <a href="{% url 'home' %}#lab" class="hud-btn">
+          <i class="bi bi-diagram-3"></i> Infrastructure Lab
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

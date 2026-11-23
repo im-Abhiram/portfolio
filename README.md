@@ -1,1 +1,316 @@
-# portfolio
+# ABHIRAM ANIL — IT INFRASTRUCTURE & CYBERSECURITY PORTFOLIO
+> **"Building, connecting and securing digital infrastructure."**
+> A high-performance, dark-themed digital identity, network operations interface, and interactive engineering portfolio.
+
+---
+
+## 1. System Architecture & Overview
+
+This project is a fully functional, production-ready portfolio web application engineered specifically for **Abhiram Anil**, an IT Executive and Cybersecurity Specialist based in Kerala, India. 
+
+Designed with an aesthetic inspired by **Network Operations Centers (NOC)**, enterprise monitoring consoles, and minimal futuristic interfaces, the website bridges IT operations, network engineering, vulnerability auditing, and full-stack software development.
+
+### Core Philosophy:
+- **No Node.js / Webpack build step required**: Uses Vanilla JavaScript, HTML5 Canvas, modern CSS variables, and native Django templates.
+- **PythonAnywhere Free Tier Compatible**: Optimized for zero-cost hosting with low CPU and memory footprints, persistent SQLite3 storage, WhiteNoise static compression, and standard WSGI handlers.
+- **100% Resume-Accurate**: Every experience point, project, skill, and certification is directly derived from Abhiram's real background with zero invented claims.
+
+---
+
+## 2. Technology Stack
+
+- **Backend**: Python 3.10+ / 3.14+, Django 5 / 6, SQLite3 database, Django ORM, Django Authentication & Session Engine, Django Admin.
+- **Frontend**: HTML5, CSS3 Custom Properties, Vanilla JavaScript (ES6+), HTML5 Canvas Vector Physics, Bootstrap Icons (with graceful offline fallbacks), Google Fonts (`Space Grotesk`, `Inter`, `JetBrains Mono`).
+- **Static & Media Serving**: WhiteNoise for high-efficiency asset compression and caching; Django Media storage for PDF resume distribution.
+- **Security**: Django CSRF tokens, strict server-side form validation, honeypot anti-spam filters, IP-based sliding window rate-limiting, parameterized ORM queries, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`.
+
+---
+
+## 3. Directory Layout
+
+```
+D:\portfolio\
+├── config/
+│   ├── settings.py           # Production & development settings with env overrides
+│   ├── urls.py               # Global routing, static/media handlers, custom 404/500
+│   └── wsgi.py               # Standard WSGI entrypoint
+├── core/
+│   ├── models.py             # PortfolioSettings model (singleton HUD toggles)
+│   ├── views.py              # Homepage, resume download stream, custom 404/500
+│   ├── context_processors.py # Global site metadata and profile injector
+│   ├── tests.py              # Full automated test suite (19 passing tests)
+│   └── management/commands/
+│       └── seed_portfolio.py # One-command database population script
+├── portfolio/
+│   ├── models.py             # Profile, Education, SkillCategory, Skill, Experience, Project, Certifications
+│   ├── views.py              # Asynchronous JSON inspection APIs
+│   └── urls.py               # API endpoints
+├── lab/
+│   ├── models.py             # NetworkKnowledgeTopic, SecurityTool, SecurityConcept
+│   ├── views.py              # Subnet calculator API, lab view
+│   └── urls.py               # Lab routes
+├── journal/
+│   ├── models.py             # BlogCategory, BlogPost, SecurityNote
+│   ├── views.py              # Field notes archive and article reader
+│   └── urls.py               # Journal routes
+├── contact/
+│   ├── models.py             # ContactMessage database model
+│   ├── forms.py              # Honeypot-protected secure Django form
+│   ├── views.py              # Rate-limited AJAX submission handler
+│   └── urls.py               # Submission route
+├── static/
+│   ├── css/portfolio.css     # Complete NOC dark theme and responsive layout
+│   └── js/
+│       ├── main.js           # Theme toggle, scroll progress, navbar observer, AJAX form
+│       ├── network-viz.js    # Hero Canvas network simulation with telemetry tooltips
+│       ├── topology-explorer.js # Interactive enterprise topology & packet simulation
+│       ├── subnet-calculator.js # Pure client-side IPv4/CIDR bitwise calculator
+│       ├── osi-stack.js      # Interactive 7-layer visual stack explorer
+│       ├── terminal.js       # Embedded interactive HUD CLI console
+│       └── project-canvas.js # Mini canvas topology preview for Project 01
+├── templates/
+│   ├── base.html             # Base layout, HUD navbar, loader, terminal modal
+│   ├── core/index.html       # Single-page scrolling portfolio with all sections
+│   ├── core/404.html         # Network-inspired "Host Unreachable" 404 page
+│   ├── core/500.html         # "Gateway Exception" 500 error page
+│   ├── journal/              # Field notes archive and post detail templates
+│   └── lab/                  # Standalone lab templates
+├── media/                    # Uploaded resumes, project diagrams, and certs
+├── staticfiles/              # Collected static files generated by collectstatic
+├── pythonanywhere_wsgi.py     # Ready-to-use PythonAnywhere WSGI configuration
+├── requirements.txt          # Python dependencies
+├── .env.example              # Example environment variable template
+└── manage.py                 # Django management utility
+```
+
+---
+
+## 4. Local Development Setup
+
+### Step 1: Clone or Navigate to the Repository
+```powershell
+cd d:\portfolio
+```
+
+### Step 2: Install Python Dependencies
+```powershell
+pip install -r requirements.txt
+```
+
+### Step 3: Run Database Migrations
+```powershell
+python manage.py migrate
+```
+
+### Step 4: Seed the Portfolio Database
+Populate the database with all of Abhiram's real resume data, skills, experiences, projects, networking topics, and security concepts:
+```powershell
+python manage.py seed_portfolio
+```
+
+### Step 5: Start the Development Server
+```powershell
+python manage.py runserver
+```
+Open [http://127.0.0.1:8000](http://127.0.0.1:8000) in your browser.
+
+---
+
+## 5. PythonAnywhere Free Account Deployment Guide
+
+This project is tailored specifically for PythonAnywhere's free account (`username.pythonanywhere.com`).
+
+### 1. Upload Project Files
+Log in to your PythonAnywhere account and open a **Bash Console**:
+```bash
+# Clone your repository or upload the zip and extract to your home directory:
+cd ~
+git clone <your-repo-url> portfolio
+# or ensure folder is at /home/<your-username>/portfolio
+```
+
+### 2. Create and Activate Virtual Environment
+```bash
+mkvirtualenv --python=python3.10 portfolio-venv
+cd ~/portfolio
+pip install -r requirements.txt
+```
+
+### 3. Run Migrations & Seed Data
+```bash
+python manage.py migrate
+python manage.py seed_portfolio
+python manage.py createsuperuser
+python manage.py collectstatic --noinput
+```
+
+### 4. Configure PythonAnywhere Web Tab
+Navigate to the **Web** tab in PythonAnywhere dashboard:
+1. Click **Add a new web app** -> Select **Manual configuration** -> Select **Python 3.10** (or installed Python 3.x).
+2. **Code Section**:
+   - **Source code**: `/home/<your-username>/portfolio`
+   - **Working directory**: `/home/<your-username>/portfolio`
+   - **WSGI configuration file**: Click the link to edit and paste the contents from `pythonanywhere_wsgi.py` (updating `yourusername` with your account name).
+3. **Virtualenv Section**:
+   - Set path to: `/home/<your-username>/.virtualenvs/portfolio-venv`
+4. **Static Files Section**:
+   Add the following mappings:
+   - **URL**: `/static/` &rarr; **Directory**: `/home/<your-username>/portfolio/staticfiles`
+   - **URL**: `/media/` &rarr; **Directory**: `/home/<your-username>/portfolio/media`
+5. Click **Reload <your-username>.pythonanywhere.com**.
+
+Your portfolio is now live with zero hosting fees!
+
+---
+
+## 6. Page Structure & Interactive Flow
+
+The web application is arranged in a logical narrative flow spanning 10 sections:
+1. `#home` — **Hero Introduction**: NOC status indicators, personal branding, live telemetry ribbon, and interactive vector network topology simulator.
+2. `#about` — **Digital Identity & Profile**: Verified portrait, professional narrative, contact coordinates, and B.Tech CSE academic credentials.
+3. `#skills` — **Technical Competencies**: Interactive filter bar and categorized matrix (Network Engineering, System Administration, Cybersecurity, Software, Media).
+4. `#experience` — **Operational Experience & Timeline**: Enterprise IT Executive responsibilities, Cybersecurity Internship, and academic milestones.
+5. `#projects` — **Projects Showcase**: 8 full-stack and mobile applications with direct **Deployed App** launch buttons and GitHub source repositories.
+6. `#certifications` — **Accredited Certifications**: 11 verified industry credentials (OCSP, Google Cyber Security, Cisco, etc.).
+7. `#field-notes` — **Technical Field Notes**: Deep-dive technical articles and engineering research.
+8. `#security` — **Defensive Security Operations**:
+   - **Defensive Security Concepts Module**: OWASP Top 10 breakdown with threat severity tags, root causes, exploitation impacts, and SIEM/WAF detection strategies.
+   - **Defensive Engineering & Vulnerability Assessment**: 8-tool auditing and reconnaissance toolchain.
+   - **Activity Wall & Lab Observations**: Operational journal of laboratory exercises.
+9. `#lab` — **Network & Infrastructure Lab**:
+   - **OSI 7-Layer Visual Diagnostic Stack**: Interactive L1-L7 layer inspection with PDUs, standard protocols, devices, and troubleshooting scenarios.
+   - **Networking Knowledge Explorer**: 18 protocol/architecture exploration cards with deep inspect modals.
+   - **Interactive Network & Infrastructure Lab**: Enterprise VLAN architecture with simulated packet traversal and node telemetry drawer.
+   - **Interactive IPv4 Subnetting Engine**: Pure bitwise subnet calculation engine with CIDR presets and binary breakdown.
+10. `#contact` — **Initiate Contact**: Direct email, mobile number with one-click copy, verified social & professional channels (GitHub, LinkedIn, Instagram), and rate-limited secure transmission channel.
+
+> **Navbar Sequence**: `Home` &rarr; `About` &rarr; `Skills` &rarr; `Experience` &rarr; `Projects` &rarr; `Certifications` &rarr; `Security` &rarr; `Infra Lab` &rarr; `Contact`.
+
+---
+
+## 7. Portfolio Features & Interactive Modules
+
+### A. Verified Social & Developer Profiles
+- **GitHub**: [https://github.com/im-Abhiram](https://github.com/im-Abhiram)
+- **LinkedIn**: [https://www.linkedin.com/in/imabhiram/](https://www.linkedin.com/in/imabhiram/)
+- **Instagram**: [https://www.instagram.com/im_abhiram__/](https://www.instagram.com/im_abhiram__/)
+- **Email**: [abhiramanil74@gmail.com](mailto:abhiramanil74@gmail.com)
+- **Phone**: `+91 9656537160` (Kerala, India)
+
+### B. Hero Network Telemetry & Canvas
+- Renders an interactive vector topology with nodes representing the **Internet Gateway**, **pfSense Firewall**, **Cisco Core Switch**, **Server Farm**, **Admin Workstations**, and **Security SIEM**.
+- Hovering over any node calculates simulated ping latency and reveals active interface telemetry.
+- Accessible pause/play button and native support for `prefers-reduced-motion`.
+
+### B. Simulated Network Topology Explorer (Lab Section)
+- Visualizes an enterprise campus architecture with **VLAN 10 (IT Management)**, **VLAN 20 (Corporate Admin)**, **VLAN 30 (Broadcast Production & Streaming)**, and **VLAN 40 (Guest Wireless)**.
+- **Interactions**:
+  - Filter by VLAN group.
+  - Switch between **Logical View** and **Physical Rack View**.
+  - Click any node to open the **Slide-out Node Inspector** showing IP assignments, interface speeds, and firewall policies.
+  - Click **Simulate Packet Traversal** to trigger an animated ping sequence from an internal host through the Core Switch, pfSense Firewall, out to the Internet Gateway.
+  - Explicitly labeled: *"Simulated Educational Model — Not actual workplace infrastructure"*.
+
+### C. IPv4 & CIDR Subnet Calculator
+- Pure Vanilla JavaScript engine executing bitwise operations on IPv4 addresses.
+- Fast calculation of:
+  - Network ID and Subnet Mask
+  - Wildcard Mask
+  - Broadcast Address
+  - Usable Host Pool ($2^{(32 - CIDR)} - 2$)
+  - First and Last Usable Host IPs
+  - Address Class
+  - Binary breakdown with visual highlighting of Network vs. Host bits.
+- Handy preset buttons for `/24` Corporate LAN, `/26` Department, `/28` Server Farm, and `/30` WAN links.
+
+### D. Networking Knowledge Explorer & OSI 7-Layer Stack
+- 18 comprehensive topic cards (OSI, TCP/IP, IPv4, IPv6, Subnetting, CIDR, VLAN, Trunking, Routing, Switching, DHCP, DNS, NAT, ACL, Firewall, VPN, Wireless, Troubleshooting).
+- Clicking any card opens a modal with: *Short Explanation*, *How It Works*, *Practical Enterprise Use*, *Troubleshooting Tip*, and *Relevant Diagnostic Tools*.
+- Clickable 7-layer OSI visual stack displaying PDUs, protocols, hardware devices, and real-world failure scenarios.
+
+### E. Cybersecurity Toolchain & Defensive Concepts
+- 8 interactive tool cards: **Nmap**, **Wireshark**, **Burp Suite**, **Metasploit**, **Splunk**, **Gobuster**, **Netdiscover**, and **Hydra** detailing practical usage from Abhiram's internship.
+- Defensive Concepts Accordion breaking down OWASP vulnerabilities: **SQLi**, **XSS**, **CSRF**, **Broken Access Control**, **SSRF**, **Command Injection**, and **Brute-Force Attacks** with root causes, impacts, code remediations, and SIEM detection ideas.
+
+### F. Projects Showcase
+The portfolio features 8 production-grade projects spanning network simulation, enterprise workforce management, manufacturing ERP, mobile Flutter applications, media news, real estate, and full-stack web platforms:
+1. **Network Simulation Platform** (Python, Django, JavaScript, Canvas) — Interactive browser-based network simulation and CCNA education platform. [Deployed Webapp](https://ramonet.pythonanywhere.com/) | [GitHub](https://github.com/im-Abhiram/toolramo)
+2. **Administrative Portal** (Python, Django, SQLite3, RBAC, Bootstrap) — Workforce management system with automated attendance, multi-cycle payroll calculation, shift-based overtime, and immutable audit logs. [Deployed Webapp](https://thamara.pythonanywhere.com/) | [GitHub](https://github.com/im-Abhiram/tempsite1)
+3. **Production Tracking System** (Python, Django, SQLite3, Analytics) — Lightweight manufacturing & construction material ERP automating kiln shifts, live inventory formulas, dispatches, and credit ledgers. [Deployed Webapp](https://thamarayyathproduction.pythonanywhere.com/) | [GitHub](https://github.com/im-Abhiram/inventory)
+4. **Remo** (Flutter, Dart, SQLite, On-Device OCR) — Premium offline-first Flutter application for intelligent receipt management, warranty alerts, EMI reminders, and private asset tracking. [GitHub](https://github.com/im-Abhiram/reme-doccument-remainder-app)
+5. **6overnews** (Python, Django, SQLite3, Bootstrap) — Modern sports news website delivering real-time journalism, live fixtures, and league standings. [GitHub](https://github.com/im-Abhiram/6overnews-sports-news-website)
+6. **Real Estate Web Application** (Python, Django, SQLite3, JS) — Real estate platform featuring property listings, multi-parameter search filters, and an agent inquiry dispatch system. [GitHub](https://github.com/im-Abhiram/real-estate-website)
+7. **EASEFOOD** (Python, Django, SQLite3, Payment Integration) — Dynamic food commerce engine with real-time order status tracking and an administrative menu dashboard.
+8. **Pet World** (Python, Django, SQLite, HTML5, CSS3, JS) — Full-stack MVT web app for pet adoption, rescue dispatch, veterinary appointments, and marketplace.
+
+### G. Accredited Certifications
+1. **Offenso Certified Security Professional (OCSP)** — Offenso Hackers Academy
+2. **Google Cybersecurity Professional** — Coursera
+3. **Cisco Networking Basics** — Cisco Networking Academy
+4. **Introduction to Microsoft Excel** — Coursera
+5. **Coding: Development & Advanced Engineering Job Simulation** — Accenture (Forage)
+6. **Excel Skills Job Simulation** — JPMorgan Chase & Co. (Forage)
+7. **Python for Data Science and Machine Learning** — Udemy
+8. **Android Malware Analysis** — Udemy
+9. **JavaScript for Beginners Complete Course** — Udemy
+10. **CSS Crash Course for Beginners** — Udemy
+11. **Mastering C & C++ Programming: From Fundamentals to Advanced** — Udemy
+
+### H. Interactive HUD Terminal Console
+- Accessible via the floating pill or keyboard shortcut (`` ` ``).
+- Commands: `help`, `about`, `skills`, `network`, `security`, `projects`, `experience`, `certifications`, `subnet [ip/cidr]`, `ping [ip]`, `whoami`, `date`, `theme`, `clear`, `exit`.
+- Features command history navigation (Up/Down arrows) and mobile-friendly command buttons.
+
+### I. Django Admin Control Center
+- Branded NOC interface for non-code management of:
+  - Personal profile & biography
+  - Skill categories and individual skills
+  - Experience entries & responsibilities
+  - Projects, architecture descriptions, and screenshots
+  - Certifications & accreditation statuses
+  - Contact messages (with read/unread triage)
+  - Portfolio settings & downloadable resume document replacement.
+
+---
+
+## 7. Security Controls
+
+| Security Control | Implementation |
+| :--- | :--- |
+| **CSRF Defense** | Django `CsrfViewMiddleware` enforced on all POST forms |
+| **Spam Prevention** | Hidden honeypot field (`website_url`) rejecting automated bot payloads |
+| **Rate Limiting** | Max 5 transmissions per 15 minutes per IP address |
+| **XSS Prevention** | Context-aware HTML escaping via Django template engine; script tags stripped |
+| **Clickjacking** | `X-Frame-Options: DENY` |
+| **MIME Sniffing** | `X-Content-Type-Options: nosniff` |
+| **SQL Injection** | Exclusively parameterized queries via Django ORM |
+| **File Upload Validation** | Strict extension allowlist (`pdf`, `docx`) with size limits |
+
+---
+
+## 8. Verification & Test Suite
+
+The test suite covers views, models, forms, security filters, rate limiting, and the subnet calculator API.
+
+Run all tests:
+```powershell
+python manage.py test
+```
+
+Expected output:
+```text
+Creating test database for alias 'default'...
+..............
+----------------------------------------------------------------------
+Ran 15 tests in 1.4s
+
+OK
+Destroying test database for alias 'default'...
+```
+
+---
+
+## 9. License & Credits
+
+- Designed and engineered for **Abhiram Anil**.
+- Built with Python & Django.

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section class="section-padding" style="min-height: 80vh; display: flex; align-items: center;">
+  <div class="container-custom" style="text-align: center;">
+    <div style="max-width: 650px; margin: 0 auto; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: 3.5rem 2rem; box-shadow: var(--shadow-lg);">
+      <div style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent-amber); margin-bottom: 1rem;">
+        <i class="bi bi-exclamation-octagon"></i> CORE_EXCEPTION // HTTP 500
+      </div>
+      
+      <h1 style="font-size: 5rem; font-weight: 800; color: var(--accent-amber); margin-bottom: 0.5rem; letter-spacing: -0.05em;">
+        500
+      </h1>
+
+      <h2 style="font-size: 1.6rem; margin-bottom: 1rem;">Internal Gateway Exception</h2>
+
+      <p style="color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.6;">
+        An unexpected daemon exception occurred during packet processing. The NOC operations team has been notified via automated log ingestion.
+      </p>
+
+      <div style="display: flex; justify-content: center; gap: 1rem;">
+        <a href="{% url 'home' %}" class="hud-btn hud-btn-primary">
+          <i class="bi bi-house"></i> Return to Default Gateway
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
