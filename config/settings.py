@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'lab.apps.LabConfig',
     'journal.apps.JournalConfig',
     'contact.apps.ContactConfig',
+    'portal.apps.PortalConfig',
 ]
 
 MIDDLEWARE = [

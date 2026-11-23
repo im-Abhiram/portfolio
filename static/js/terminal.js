@@ -42,6 +42,7 @@ AVAILABLE COMMANDS:
   github          - Open GitHub profile directly in new tab
   linkedin        - Open LinkedIn profile directly in new tab
   instagram       - Open Instagram profile directly in new tab
+  admin           - Launch NOC Operator Admin Login Portal
   whoami          - Current session user identity
   date            - Current system timestamp
   theme           - Toggle dark/light interface mode
@@ -269,6 +270,14 @@ Instagram: https://www.instagram.com/im_abhiram__/
 
     if (mainCmd === 'exit') {
       if (terminalBackdrop) terminalBackdrop.classList.remove('open');
+      return;
+    }
+
+    if (mainCmd === 'admin' || mainCmd === 'portal' || mainCmd === 'login') {
+      appendOutput('[LAUNCHING SECURE NOC OPERATOR PORTAL]');
+      setTimeout(() => {
+        window.location.href = '/portal/login/';
+      }, 500);
       return;
     }
 

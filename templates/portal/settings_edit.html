@@ -1,0 +1,113 @@
+{% extends 'portal/base_portal.html' %}
+
+{% block page_title %}Site Settings & HUD // Main Page Configuration{% endblock %}
+
+{% block content %}
+<div class="portal-card">
+  <div class="portal-card-header">
+    <div>
+      <h3 class="portal-card-title"><i class="bi bi-sliders2"></i> Global Settings & HUD Telemetry</h3>
+      <div class="portal-card-subtitle">Manage browser titles, system HUD text, downloadable resume, and section visibility</div>
+    </div>
+  </div>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+      <div class="portal-form-group">
+        <label class="portal-label">Site Title (HTML &lt;title&gt;)</label>
+        {{ form.site_title }}
+        <div class="portal-help">Displays in the browser tab and search engines</div>
+      </div>
+
+      <div class="portal-form-group">
+        <label class="portal-label">Brand Tagline</label>
+        {{ form.brand_tagline }}
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+      <div class="portal-form-group">
+        <label class="portal-label">NOC Telemetry Status Text</label>
+        {{ form.noc_status_text }}
+        <div class="portal-help">e.g. SYS_OPERATIONAL // NOC MONITORING ACTIVE</div>
+      </div>
+
+      <div class="portal-form-group">
+        <label class="portal-label">Location HUD Label</label>
+        {{ form.location_label }}
+        <div class="portal-help">e.g. Kerala, India [UTC+05:30]</div>
+      </div>
+    </div>
+
+    <!-- Resume Document Upload -->
+    <div style="margin: 24px 0; padding: 20px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--portal-border); border-radius: 8px;">
+      <div style="font-family: var(--font-heading); font-size: 1rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+        <i class="bi bi-file-earmark-pdf-fill" style="color: var(--portal-lime);"></i> Downloadable Resume Document
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div class="portal-form-group" style="margin-bottom: 0;">
+          <label class="portal-label">Upload Resume File (PDF / DOCX)</label>
+          {{ form.resume_file }}
+          {% if settings.resume_file %}
+            <div class="portal-help" style="color: var(--portal-green); margin-top: 6px;">
+              <i class="bi bi-check-circle"></i> Currently active: <a href="{{ settings.resume_file.url }}" target="_blank" style="color: var(--portal-lime);">{{ settings.resume_file.name }}</a>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="portal-form-group" style="margin-bottom: 0;">
+          <label class="portal-label">Suggested Download Filename</label>
+          {{ form.resume_download_name }}
+          <div class="portal-help">e.g. Abhiram_Anil_Resume.pdf</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section Visibility Switches -->
+    <div style="margin: 24px 0; padding: 20px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--portal-border); border-radius: 8px;">
+      <div style="font-family: var(--font-heading); font-size: 1rem; font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
+        <i class="bi bi-toggles" style="color: var(--portal-green);"></i> Section Visibility Controls
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+        <label class="portal-switch-label">
+          {{ form.show_lab_section }}
+          <span>Enable Network & Infrastructure Lab Section</span>
+        </label>
+
+        <label class="portal-switch-label">
+          {{ form.show_certifications }}
+          <span>Enable Industry Certifications Section</span>
+        </label>
+
+        <label class="portal-switch-label">
+          {{ form.show_journal_section }}
+          <span>Enable Technical Field Notes Section</span>
+        </label>
+
+        <label class="portal-switch-label">
+          {{ form.show_activity_wall }}
+          <span>Enable Lab Activity Wall</span>
+        </label>
+
+        <label class="portal-switch-label">
+          {{ form.show_terminal_feature }}
+          <span>Enable Interactive Terminal CLI Console</span>
+        </label>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 12px; margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--portal-border);">
+      <button type="submit" class="portal-btn-sm portal-btn-accent" style="padding: 10px 24px; font-size: 0.9rem; cursor: pointer;">
+        <i class="bi bi-check2-circle"></i> Save Settings
+      </button>
+      <a href="{% url 'portal:dashboard' %}" class="portal-btn-sm portal-btn-outline" style="padding: 10px 18px;">
+        Cancel
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,216 @@
+{% extends 'portal/base_portal.html' %}
+
+{% block page_title %}Visitor Transmissions // Contact Inbox{% endblock %}
+
+{% block content %}
+<div class="portal-card">
+  <div class="portal-card-header">
+    <div>
+      <h3 class="portal-card-title"><i class="bi bi-envelope-paper-fill"></i> Transmissions Inbox</h3>
+      <div class="portal-card-subtitle">
+        {{ total_count }} total messages received &bull; 
+        <strong style="color: {% if unread_count > 0 %}var(--portal-red){% else %}var(--portal-green){% endif %};">
+          {{ unread_count }} unread
+        </strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter & Search Controls -->
+  <div class="portal-filter-bar">
+    <div class="portal-filter-tabs">
+      <a href="{% url 'portal:messages' %}" class="portal-tab-btn {% if status_filter == 'all' %}active{% endif %}">
+        All Messages ({{ total_count }})
+      </a>
+      <a href="{% url 'portal:messages' %}?status=unread" class="portal-tab-btn {% if status_filter == 'unread' %}active{% endif %}">
+        Unread ({{ unread_count }})
+      </a>
+      <a href="{% url 'portal:messages' %}?status=read" class="portal-tab-btn {% if status_filter == 'read' %}active{% endif %}">
+        Read Archive
+      </a>
+    </div>
+
+    <form method="get" action="{% url 'portal:messages' %}" style="display: flex; gap: 8px;">
+      {% if status_filter != 'all' %}
+        <input type="hidden" name="status" value="{{ status_filter }}">
+      {% endif %}
+      <input type="text" name="q" value="{{ search_query }}" placeholder="Search sender, email, IP..." class="portal-input" style="width: 240px; padding: 6px 12px; font-size: 0.82rem;">
+      <button type="submit" class="portal-btn-sm portal-btn-outline">
+        <i class="bi bi-search"></i> Filter
+      </button>
+      {% if search_query %}
+        <a href="{% url 'portal:messages' %}" class="portal-btn-sm portal-btn-outline" title="Clear Search">
+          <i class="bi bi-x"></i>
+        </a>
+      {% endif %}
+    </form>
+  </div>
+
+  <!-- Transmissions Table -->
+  {% if messages_list %}
+    <div class="portal-table-container">
+      <table class="portal-table">
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Sender Name</th>
+            <th>Contact Email</th>
+            <th>Subject</th>
+            <th>Client IP</th>
+            <th>Received</th>
+            <th style="text-align: right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for msg in messages_list %}
+            <tr class="{% if not msg.is_read %}unread{% endif %}">
+              <td>
+                {% if msg.is_read %}
+                  <span class="portal-pill portal-pill-dim"><i class="bi bi-envelope-open"></i> READ</span>
+                {% else %}
+                  <span class="portal-pill portal-pill-red"><i class="bi bi-envelope-fill"></i> NEW</span>
+                {% endif %}
+              </td>
+              <td style="font-weight: 600; color: var(--portal-text);">{{ msg.name }}</td>
+              <td>
+                <a href="mailto:{{ msg.email }}?subject=Re: {{ msg.subject|urlencode }}" style="color: var(--portal-lime); text-decoration: none; font-family: var(--font-mono); font-size: 0.8rem;">
+                  {{ msg.email }}
+                </a>
+              </td>
+              <td>
+                <div style="max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--portal-text);">
+                  {{ msg.subject }}
+                </div>
+              </td>
+              <td style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--portal-text-dim);">
+                {{ msg.ip_address|default:"127.0.0.1" }}
+              </td>
+              <td style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--portal-text-dim); white-space: nowrap;">
+                {{ msg.created_at|date:"Y-m-d H:i" }}
+              </td>
+              <td style="text-align: right; white-space: nowrap;">
+                <button type="button" class="portal-btn-sm portal-btn-outline js-open-msg" 
+                  data-id="{{ msg.pk }}"
+                  data-name="{{ msg.name }}"
+                  data-email="{{ msg.email }}"
+                  data-subject="{{ msg.subject }}"
+                  data-message="{{ msg.message|escape }}"
+                  data-ip="{{ msg.ip_address }}"
+                  data-date="{{ msg.created_at|date:'M d, Y H:i' }}"
+                  title="View full transmission">
+                  <i class="bi bi-eye"></i> View
+                </button>
+                <a href="{% url 'portal:message_toggle_read' msg.pk %}" class="portal-btn-sm portal-btn-outline" title="Toggle Read Status">
+                  <i class="bi {% if msg.is_read %}bi-envelope{% else %}bi-envelope-check{% endif %}"></i>
+                </a>
+                <a href="{% url 'portal:message_delete' msg.pk %}" class="portal-btn-sm portal-btn-outline" style="color: var(--portal-red);" onclick="return confirm('Permanently delete transmission #{{ msg.pk }}?');" title="Delete">
+                  <i class="bi bi-trash"></i>
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div style="text-align: center; padding: 48px 0; color: var(--portal-text-muted); font-family: var(--font-mono);">
+      <i class="bi bi-inbox" style="font-size: 2.4rem; display: block; margin-bottom: 12px; color: var(--portal-text-dim);"></i>
+      No transmissions match current filter criteria.
+    </div>
+  {% endif %}
+</div>
+
+<!-- Modal for Viewing Transmission -->
+<div id="msgModal" class="portal-modal-backdrop">
+  <div class="portal-modal">
+    <div class="portal-modal-header">
+      <h3 style="font-family: var(--font-heading); margin: 0; font-size: 1.1rem;" id="modalSubject">Transmission</h3>
+      <button type="button" id="modalCloseBtn" style="background: transparent; border: none; color: var(--portal-text-muted); font-size: 1.3rem; cursor: pointer;">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    <div class="portal-modal-body">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--portal-border); font-size: 0.82rem;">
+        <div>
+          <span style="font-family: var(--font-mono); color: var(--portal-text-dim); display: block;">SENDER:</span>
+          <strong id="modalSender" style="color: var(--portal-text);"></strong>
+        </div>
+        <div>
+          <span style="font-family: var(--font-mono); color: var(--portal-text-dim); display: block;">EMAIL:</span>
+          <a id="modalEmail" href="" style="color: var(--portal-lime); font-family: var(--font-mono);"></a>
+        </div>
+        <div>
+          <span style="font-family: var(--font-mono); color: var(--portal-text-dim); display: block;">TIMESTAMP:</span>
+          <span id="modalDate" style="color: var(--portal-text-muted); font-family: var(--font-mono);"></span>
+        </div>
+        <div>
+          <span style="font-family: var(--font-mono); color: var(--portal-text-dim); display: block;">ORIGIN IP:</span>
+          <span id="modalIp" style="color: var(--portal-text-muted); font-family: var(--font-mono);"></span>
+        </div>
+      </div>
+
+      <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--portal-text-dim); margin-bottom: 6px;">TRANSMISSION BODY:</div>
+      <div id="modalBody" style="background: #0D110E; padding: 16px; border-radius: 6px; border: 1px solid var(--portal-border); color: var(--portal-text); font-size: 0.9rem; line-height: 1.6; white-space: pre-wrap;"></div>
+    </div>
+    <div class="portal-modal-footer">
+      <a id="modalReplyBtn" href="" class="portal-btn-sm portal-btn-accent">
+        <i class="bi bi-reply-fill"></i> Reply via Email
+      </a>
+      <button type="button" id="modalDismissBtn" class="portal-btn-sm portal-btn-outline">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('msgModal');
+    const closeBtn = document.getElementById('modalCloseBtn');
+    const dismissBtn = document.getElementById('modalDismissBtn');
+
+    function closeModal() {
+      modal.classList.remove('active');
+    }
+
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (dismissBtn) dismissBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    document.querySelectorAll('.js-open-msg').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        const name = btn.getAttribute('data-name');
+        const email = btn.getAttribute('data-email');
+        const subject = btn.getAttribute('data-subject');
+        const message = btn.getAttribute('data-message');
+        const ip = btn.getAttribute('data-ip');
+        const date = btn.getAttribute('data-date');
+
+        document.getElementById('modalSubject').textContent = subject;
+        document.getElementById('modalSender').textContent = name;
+        const emailLink = document.getElementById('modalEmail');
+        emailLink.textContent = email;
+        emailLink.href = 'mailto:' + email;
+        document.getElementById('modalDate').textContent = date;
+        document.getElementById('modalIp').textContent = ip || 'N/A';
+        document.getElementById('modalBody').textContent = message;
+
+        const replyBtn = document.getElementById('modalReplyBtn');
+        replyBtn.href = `mailto:${email}?subject=Re: ${encodeURIComponent(subject)}`;
+
+        modal.classList.add('active');
+
+        // Mark read asynchronously via detail view
+        fetch(`/portal/messages/${id}/`, {
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        }).catch(() => {});
+      });
+    });
+  });
+</script>
+{% endblock %}

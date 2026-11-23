@@ -1,0 +1,167 @@
+{% extends 'portal/base_portal.html' %}
+
+{% block page_title %}Operations HUD // Dashboard{% endblock %}
+
+{% block content %}
+<!-- Telemetry Metrics Grid -->
+<div class="telemetry-grid">
+  <div class="telemetry-card highlight">
+    <div class="telemetry-card-top">
+      <span class="telemetry-label">Visitor Transmissions</span>
+      <div class="telemetry-icon"><i class="bi bi-inbox-fill"></i></div>
+    </div>
+    <div class="telemetry-value">{{ total_messages }}</div>
+    <div class="telemetry-desc">
+      {% if unread_messages > 0 %}
+        <span style="color: var(--portal-red); font-weight: 700;"><i class="bi bi-bell-fill"></i> {{ unread_messages }} UNREAD</span>
+      {% else %}
+        <i class="bi bi-check2-all"></i> All caught up
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="telemetry-card">
+    <div class="telemetry-card-top">
+      <span class="telemetry-label">Projects Deployed</span>
+      <div class="telemetry-icon"><i class="bi bi-code-slash"></i></div>
+    </div>
+    <div class="telemetry-value">{{ total_projects }}</div>
+    <div class="telemetry-desc">Showcase applications live</div>
+  </div>
+
+  <div class="telemetry-card">
+    <div class="telemetry-card-top">
+      <span class="telemetry-label">Technical Competencies</span>
+      <div class="telemetry-icon"><i class="bi bi-hdd-network"></i></div>
+    </div>
+    <div class="telemetry-value">{{ total_skills }}</div>
+    <div class="telemetry-desc">Skills in database</div>
+  </div>
+
+  <div class="telemetry-card">
+    <div class="telemetry-card-top">
+      <span class="telemetry-label">Certifications</span>
+      <div class="telemetry-icon"><i class="bi bi-award-fill"></i></div>
+    </div>
+    <div class="telemetry-value">{{ total_certs }}</div>
+    <div class="telemetry-desc">Industry credentials</div>
+  </div>
+</div>
+
+<!-- Main Page Status Summary & Quick Actions -->
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 24px;">
+  <!-- Recent Transmissions -->
+  <div class="portal-card" style="margin-bottom: 0;">
+    <div class="portal-card-header">
+      <div>
+        <h3 class="portal-card-title"><i class="bi bi-envelope-paper"></i> Recent Visitor Inquiries</h3>
+        <div class="portal-card-subtitle">Direct messages submitted through the contact form</div>
+      </div>
+      <a href="{% url 'portal:messages' %}" class="portal-btn-sm portal-btn-outline">
+        View All ({{ total_messages }}) <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+
+    {% if recent_messages %}
+      <div class="portal-table-container">
+        <table class="portal-table">
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Sender</th>
+              <th>Subject</th>
+              <th>Timestamp</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for msg in recent_messages %}
+              <tr class="{% if not msg.is_read %}unread{% endif %}">
+                <td>
+                  {% if msg.is_read %}
+                    <span class="portal-pill portal-pill-dim">READ</span>
+                  {% else %}
+                    <span class="portal-pill portal-pill-red">NEW</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div style="color: var(--portal-text); font-weight: 600;">{{ msg.name }}</div>
+                  <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--portal-text-muted);">{{ msg.email }}</div>
+                </td>
+                <td>
+                  <div style="max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                    {{ msg.subject }}
+                  </div>
+                </td>
+                <td style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--portal-text-dim);">
+                  {{ msg.created_at|date:"M d, H:i" }}
+                </td>
+                <td>
+                  <a href="{% url 'portal:messages' %}?q={{ msg.name }}" class="portal-btn-sm portal-btn-outline" style="padding: 4px 8px;">
+                    <i class="bi bi-eye"></i> View
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div style="text-align: center; padding: 36px 0; color: var(--portal-text-muted); font-family: var(--font-mono); font-size: 0.85rem;">
+        <i class="bi bi-inbox" style="font-size: 2rem; display: block; margin-bottom: 8px; color: var(--portal-text-dim);"></i>
+        No visitor transmissions received yet.
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Main Page Quick Control -->
+  <div class="portal-card" style="margin-bottom: 0;">
+    <div class="portal-card-header">
+      <div>
+        <h3 class="portal-card-title"><i class="bi bi-pencil-square"></i> Quick Edit</h3>
+        <div class="portal-card-subtitle">Live website information</div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <a href="{% url 'portal:profile_edit' %}" class="portal-btn-sm portal-btn-outline" style="padding: 12px; justify-content: space-between;">
+        <span style="display: flex; align-items: center; gap: 8px;">
+          <i class="bi bi-person-circle" style="color: var(--portal-lime); font-size: 1.1rem;"></i>
+          <strong>Edit Identity & Bio</strong>
+        </span>
+        <i class="bi bi-chevron-right"></i>
+      </a>
+
+      <a href="{% url 'portal:settings_edit' %}" class="portal-btn-sm portal-btn-outline" style="padding: 12px; justify-content: space-between;">
+        <span style="display: flex; align-items: center; gap: 8px;">
+          <i class="bi bi-toggles" style="color: var(--portal-green); font-size: 1.1rem;"></i>
+          <strong>Settings & Resume</strong>
+        </span>
+        <i class="bi bi-chevron-right"></i>
+      </a>
+
+      <a href="{% url 'portal:projects_list' %}" class="portal-btn-sm portal-btn-outline" style="padding: 12px; justify-content: space-between;">
+        <span style="display: flex; align-items: center; gap: 8px;">
+          <i class="bi bi-collection-play" style="color: var(--portal-amber); font-size: 1.1rem;"></i>
+          <strong>Manage Projects ({{ total_projects }})</strong>
+        </span>
+        <i class="bi bi-chevron-right"></i>
+      </a>
+
+      <a href="{% url 'portal:certifications_list' %}" class="portal-btn-sm portal-btn-outline" style="padding: 12px; justify-content: space-between;">
+        <span style="display: flex; align-items: center; gap: 8px;">
+          <i class="bi bi-patch-check" style="color: var(--portal-blue); font-size: 1.1rem;"></i>
+          <strong>Certifications ({{ total_certs }})</strong>
+        </span>
+        <i class="bi bi-chevron-right"></i>
+      </a>
+    </div>
+
+    <div style="margin-top: 20px; padding: 14px; background: rgba(0, 0, 0, 0.25); border: 1px solid var(--portal-border); border-radius: 6px;">
+      <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--portal-text-dim); margin-bottom: 4px;">ACTIVE PROFILE</div>
+      <div style="font-weight: 700; color: var(--portal-text);">{{ profile.full_name }}</div>
+      <div style="font-size: 0.78rem; color: var(--portal-text-muted); margin-top: 2px;">{{ profile.headline }}</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

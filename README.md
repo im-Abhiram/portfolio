@@ -164,7 +164,37 @@ Your portfolio is now live at **[https://abhiramportfolio.pythonanywhere.com](ht
 
 ---
 
-## 6. Page Structure & Interactive Flow
+## 6. NOC Operator Portal & CMS (`/portal/`)
+
+The application includes a dedicated, dark NOC-themed **Operator Management Portal** accessible at `/portal/` (or via the link in the footer, or by typing `admin` in the terminal CLI).
+
+### Key Features of the Operator Portal:
+1. **Secure Authentication (`/portal/login/`)**:
+   - Operator login restricted to staff accounts (`is_staff=True`).
+   - Log in using the superuser account created with `python manage.py createsuperuser`.
+2. **Visitor Transmissions Inbox (`/portal/messages/`)**:
+   - Real-time review of all messages submitted through the website's contact form.
+   - Shows sender Name, Email, Subject, Timestamp, and origin IP address.
+   - Filter by All, Unread, or Read messages.
+   - Instant message preview modal, one-click `mailto:` reply button, read/unread toggle, and message deletion.
+3. **Live Main Page Content Editor (`/portal/profile/`)**:
+   - Update your Full Name, Professional Title, Hero Headline, Secondary Statement, and About Me narrative directly without touching code or database shells.
+   - Update contact coordinates (Email, Mobile Phone, Location, Timezone) and upload a new profile portrait photo.
+4. **Site Settings & HUD Controls (`/portal/settings/`)**:
+   - Manage the browser title (`<title>`), Brand Tagline, and NOC status text.
+   - Upload a new PDF/DOCX resume file and customize the download filename.
+   - Enable or disable specific portfolio sections on the fly (Lab section, Certifications, Field Notes, Terminal CLI).
+5. **Portfolio Data Management**:
+   - **Projects (`/portal/projects/`)**: Add, edit, or delete deployed applications, live links, and GitHub repositories.
+   - **Skills Matrix (`/portal/skills/`)**: Add, edit, or categorize networking, sysadmin, cybersecurity, and software skills.
+   - **Certifications (`/portal/certifications/`)**: Add or edit accredited industry credentials.
+   - **Experience (`/portal/experience/`)**: Manage career timeline and responsibilities.
+6. **Advanced ORM Administration**:
+   - Direct link to Django's low-level admin at `/admin/` for advanced database administration.
+
+---
+
+## 7. Page Structure & Interactive Flow
 
 The web application is arranged in a logical narrative flow spanning 10 sections:
 1. `#home` — **Hero Introduction**: NOC status indicators, personal branding, live telemetry ribbon, and interactive vector network topology simulator.

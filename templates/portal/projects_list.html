@@ -1,0 +1,80 @@
+{% extends 'portal/base_portal.html' %}
+
+{% block page_title %}Projects Showcase // Manage Applications{% endblock %}
+
+{% block content %}
+<div class="portal-card">
+  <div class="portal-card-header">
+    <div>
+      <h3 class="portal-card-title"><i class="bi bi-collection-play-fill"></i> Showcase Projects</h3>
+      <div class="portal-card-subtitle">Manage deployed web applications, mobile tools, and architecture write-ups</div>
+    </div>
+    <a href="{% url 'portal:project_create' %}" class="portal-btn-sm portal-btn-accent">
+      <i class="bi bi-plus-circle"></i> Add New Project
+    </a>
+  </div>
+
+  {% if items %}
+    <div class="portal-table-container">
+      <table class="portal-table">
+        <thead>
+          <tr>
+            <th>Order</th>
+            <th>Title</th>
+            <th>Category & Badge</th>
+            <th>Live / Repository Links</th>
+            <th>Featured</th>
+            <th style="text-align: right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in items %}
+            <tr>
+              <td style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--portal-text-dim);">#{{ p.order }}</td>
+              <td>
+                <div style="font-weight: 700; color: var(--portal-text);">{{ p.title }}</div>
+                <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--portal-text-muted);">{{ p.technologies|truncatechars:50 }}</div>
+              </td>
+              <td>
+                <span class="portal-pill portal-pill-dim">{{ p.category }}</span>
+                <span class="portal-pill portal-pill-lime">{{ p.badge_label }}</span>
+              </td>
+              <td>
+                {% if p.demo_url %}
+                  <a href="{{ p.demo_url }}" target="_blank" style="color: var(--portal-green); text-decoration: none; font-size: 0.8rem; margin-right: 8px;">
+                    <i class="bi bi-box-arrow-up-right"></i> Live App
+                  </a>
+                {% endif %}
+                {% if p.github_url %}
+                  <a href="{{ p.github_url }}" target="_blank" style="color: var(--portal-text-muted); text-decoration: none; font-size: 0.8rem;">
+                    <i class="bi bi-github"></i> Repo
+                  </a>
+                {% endif %}
+              </td>
+              <td>
+                {% if p.is_featured %}
+                  <span class="portal-pill portal-pill-green"><i class="bi bi-check2"></i> Yes</span>
+                {% else %}
+                  <span class="portal-pill portal-pill-dim">No</span>
+                {% endif %}
+              </td>
+              <td style="text-align: right; white-space: nowrap;">
+                <a href="{% url 'portal:project_edit' p.pk %}" class="portal-btn-sm portal-btn-outline" title="Edit">
+                  <i class="bi bi-pencil"></i> Edit
+                </a>
+                <a href="{% url 'portal:project_delete' p.pk %}" class="portal-btn-sm portal-btn-outline" style="color: var(--portal-red);" onclick="return confirm('Delete project {{ p.title }}?');" title="Delete">
+                  <i class="bi bi-trash"></i>
+                </a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div style="text-align: center; padding: 40px; color: var(--portal-text-muted);">
+      No projects found. Click "Add New Project" to get started.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -12,6 +12,7 @@ admin.site.index_title = "Infrastructure & Portfolio Control Center"
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('portal/', include('portal.urls', namespace='portal')),
     path('', home_view, name='home'),
     path('resume/download/', download_resume_view, name='download_resume'),
     path('portfolio/', include('portfolio.urls', namespace='portfolio')),

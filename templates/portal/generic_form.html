@@ -1,0 +1,48 @@
+{% extends 'portal/base_portal.html' %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="portal-card" style="max-width: 860px; margin: 0 auto;">
+  <div class="portal-card-header">
+    <div>
+      <h3 class="portal-card-title">{{ title }}</h3>
+      <div class="portal-card-subtitle">{{ subtitle }}</div>
+    </div>
+  </div>
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    {% for field in form %}
+      <div class="portal-form-group">
+        {% if field.field.widget.input_type == 'checkbox' %}
+          <label class="portal-switch-label">
+            {{ field }}
+            <span>{{ field.label }}</span>
+          </label>
+        {% else %}
+          <label class="portal-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+        {% endif %}
+
+        {% if field.help_text %}
+          <div class="portal-help">{{ field.help_text }}</div>
+        {% endif %}
+        {% if field.errors %}
+          <div class="portal-help" style="color: var(--portal-red);">{{ field.errors.0 }}</div>
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    <div style="display: flex; gap: 12px; margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--portal-border);">
+      <button type="submit" class="portal-btn-sm portal-btn-accent" style="padding: 10px 24px; font-size: 0.9rem; cursor: pointer;">
+        <i class="bi bi-check2-circle"></i> Save & Deploy to Main Page
+      </button>
+      <a href="{% url cancel_url %}" class="portal-btn-sm portal-btn-outline" style="padding: 10px 18px;">
+        Cancel
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}
