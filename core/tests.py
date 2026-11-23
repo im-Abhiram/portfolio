@@ -23,7 +23,14 @@ class PortfolioViewTests(TestCase):
         self.assertContains(response, "Securing infrastructure.")
         self.assertContains(response, "9656537160")
         self.assertContains(response, "A.P.J Abdul Kalam Technological University")
+        self.assertContains(response, "https://abhiramportfolio.pythonanywhere.com/")
         self.assertTemplateUsed(response, 'core/index.html')
+
+    def test_pythonanywhere_host_and_csrf_configuration(self):
+        """Verify production host and CSRF settings for abhiramportfolio."""
+        from django.conf import settings
+        self.assertIn('abhiramportfolio.pythonanywhere.com', settings.ALLOWED_HOSTS)
+        self.assertIn('https://abhiramportfolio.pythonanywhere.com', settings.CSRF_TRUSTED_ORIGINS)
 
     def test_resume_download_fallback(self):
         """Verify resume download provides a valid attachment even if no file was uploaded."""

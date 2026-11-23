@@ -119,15 +119,15 @@ Open [http://127.0.0.1:8000](http://127.0.0.1:8000) in your browser.
 
 ## 5. PythonAnywhere Free Account Deployment Guide
 
-This project is tailored specifically for PythonAnywhere's free account (`username.pythonanywhere.com`).
+This project is tailored specifically for PythonAnywhere's free account (`abhiramportfolio.pythonanywhere.com`).
 
 ### 1. Upload Project Files
-Log in to your PythonAnywhere account and open a **Bash Console**:
+Log in to your PythonAnywhere account (`abhiramportfolio`) and open a **Bash Console**:
 ```bash
-# Clone your repository or upload the zip and extract to your home directory:
+# Clone the repository directly into your home directory:
 cd ~
-git clone <your-repo-url> portfolio
-# or ensure folder is at /home/<your-username>/portfolio
+git clone https://github.com/im-Abhiram/portfolio.git portfolio
+cd ~/portfolio
 ```
 
 ### 2. Create and Activate Virtual Environment
@@ -149,18 +149,18 @@ python manage.py collectstatic --noinput
 Navigate to the **Web** tab in PythonAnywhere dashboard:
 1. Click **Add a new web app** -> Select **Manual configuration** -> Select **Python 3.10** (or installed Python 3.x).
 2. **Code Section**:
-   - **Source code**: `/home/<your-username>/portfolio`
-   - **Working directory**: `/home/<your-username>/portfolio`
-   - **WSGI configuration file**: Click the link to edit and paste the contents from `pythonanywhere_wsgi.py` (updating `yourusername` with your account name).
+   - **Source code**: `/home/abhiramportfolio/portfolio`
+   - **Working directory**: `/home/abhiramportfolio/portfolio`
+   - **WSGI configuration file**: Click the link to edit and paste the contents of `pythonanywhere_wsgi.py` (which already has `username = 'abhiramportfolio'`).
 3. **Virtualenv Section**:
-   - Set path to: `/home/<your-username>/.virtualenvs/portfolio-venv`
+   - Set path to: `/home/abhiramportfolio/.virtualenvs/portfolio-venv`
 4. **Static Files Section**:
    Add the following mappings:
-   - **URL**: `/static/` &rarr; **Directory**: `/home/<your-username>/portfolio/staticfiles`
-   - **URL**: `/media/` &rarr; **Directory**: `/home/<your-username>/portfolio/media`
-5. Click **Reload <your-username>.pythonanywhere.com**.
+   - **URL**: `/static/` &rarr; **Directory**: `/home/abhiramportfolio/portfolio/staticfiles`
+   - **URL**: `/media/` &rarr; **Directory**: `/home/abhiramportfolio/portfolio/media`
+5. Click **Reload abhiramportfolio.pythonanywhere.com**.
 
-Your portfolio is now live with zero hosting fees!
+Your portfolio is now live at **[https://abhiramportfolio.pythonanywhere.com](https://abhiramportfolio.pythonanywhere.com)** with zero hosting fees!
 
 ---
 

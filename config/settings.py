@@ -19,11 +19,12 @@ DEBUG = os.environ.get('DJANGO_DEBUG', 'True').strip().lower() in ('true', '1', 
 
 ALLOWED_HOSTS = os.environ.get(
     'DJANGO_ALLOWED_HOSTS',
-    '127.0.0.1,localhost,.pythonanywhere.com'
+    '127.0.0.1,localhost,.pythonanywhere.com,abhiramportfolio.pythonanywhere.com'
 ).split(',')
 
 CSRF_TRUSTED_ORIGINS = [
     'https://*.pythonanywhere.com',
+    'https://abhiramportfolio.pythonanywhere.com',
     'http://127.0.0.1:8000',
     'http://localhost:8000',
 ]
