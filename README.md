@@ -199,11 +199,11 @@ Whenever you push new changes, bug fixes, or security updates to your GitHub rep
 #### Method 1: Instant 1-Line Update (Recommended)
 Open a **Bash Console** in PythonAnywhere and run:
 ```bash
-cd ~/portfolio && source ~/.virtualenvs/portfolio-venv/bin/activate && git pull origin main && pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput && touch /var/www/abhiramportfolio_pythonanywhere_com_wsgi.py
+cd ~/portfolio && git checkout -- staticfiles/ && source ~/.virtualenvs/portfolio-venv/bin/activate && git pull origin main && pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput && touch /var/www/abhiramportfolio_pythonanywhere_com_wsgi.py
 ```
 If you also want to verify production Django checks before reloading uWSGI:
 ```bash
-cd ~/portfolio && source ~/.virtualenvs/portfolio-venv/bin/activate && git pull origin main && pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput && DJANGO_DEBUG=False python manage.py check --deploy && touch /var/www/abhiramportfolio_pythonanywhere_com_wsgi.py
+cd ~/portfolio && git checkout -- staticfiles/ && source ~/.virtualenvs/portfolio-venv/bin/activate && git pull origin main && pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput && DJANGO_DEBUG=False python manage.py check --deploy && touch /var/www/abhiramportfolio_pythonanywhere_com_wsgi.py
 ```
 
 #### Method 2: Using the Included Shell Script (`update_pa.sh`)
@@ -218,7 +218,8 @@ cd ~/portfolio && bash update_pa.sh
 cd ~/portfolio
 source ~/.virtualenvs/portfolio-venv/bin/activate
 
-# 2. Pull latest code from GitHub
+# 2. Discard build-artifact changes under staticfiles/ (regenerated below) and pull
+git checkout -- staticfiles/
 git pull origin main
 
 # 3. Install/upgrade dependencies & apply database migrations

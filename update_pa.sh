@@ -13,6 +13,8 @@ echo "=== [2/5] Activating virtual environment ==="
 source /home/abhiramportfolio/.virtualenvs/portfolio-venv/bin/activate
 
 echo "=== [3/5] Pulling latest updates from GitHub ==="
+# Discard server-generated staticfiles modifications before pulling (collectstatic rebuilds them cleanly)
+git checkout -- staticfiles/
 git pull origin main
 
 echo "=== [4/5] Installing dependencies & migrating database ==="
