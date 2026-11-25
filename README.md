@@ -36,10 +36,13 @@ D:\portfolio\
 │   └── wsgi.py               # Standard WSGI entrypoint
 ├── core/
 │   ├── models.py             # PortfolioSettings model (singleton HUD toggles)
-│   ├── views.py              # Homepage, resume download stream, custom 404/500
-│   ├── middleware.py         # SecurityHeadersMiddleware (CSP, Permissions-Policy, COOP, CORP)
+│   ├── views.py              # Homepage, resume download stream, robots.txt, custom 404/500
+│   ├── middleware.py         # SecurityHeadersMiddleware (CSP, no-store, Permissions-Policy, COOP/CORP)
+│   ├── security.py           # Proxy-aware client IP extraction & CRLF/secret-scrubbed security logger
+│   ├── validators.py         # SafeUploadPath UUID paths, PIL/PDF/DOCX magic-byte & URL validators
 │   ├── context_processors.py # Global site metadata and profile injector
-│   ├── tests.py              # Full automated test suite (25 passing tests)
+│   ├── security_tests.py     # OWASP Top 10, CSRF, upload, traversal & header security tests
+│   ├── tests.py              # Core functional & security regression test suite
 │   └── management/commands/
 │       └── seed_portfolio.py # One-command database population script
 ├── portfolio/
@@ -70,9 +73,11 @@ D:\portfolio\
 │   │   └── generate_daily_article.py # Idempotent scheduled/manual CLI generator
 │   └── tests.py              # Generation, dedup, portal workflow & view tests
 ├── portal/
+│   ├── models.py             # LoginAttemptLog brute-force lockout tracking
+│   ├── admin.py              # Read-only LoginAttemptLog Django Admin registration
 │   ├── forms.py              # Operator Portal forms (Profile, Settings, DailyArticle, BlogPost)
-│   ├── views.py              # Custom GUI admin views, CAPTCHA login, AI post editor
-│   └── captcha.py            # Zero-dependency Pillow visual CAPTCHA engine
+│   ├── views.py              # Custom GUI admin views, lockout/CAPTCHA login, AI post editor
+│   └── captcha.py            # Zero-dependency CSPRNG Pillow visual CAPTCHA engine
 ├── contact/
 │   ├── models.py             # ContactMessage database model
 │   ├── forms.py              # Honeypot-protected secure Django form
@@ -189,52 +194,82 @@ Your portfolio is now live at **[https://abhiramportfolio.pythonanywhere.com](ht
 
 ### Part B: Updating the Web App with Latest GitHub Commits
 
-Whenever you push new changes, bug fixes, or features to your GitHub repository (`main` branch), use any of the methods below to update your live PythonAnywhere site.
+Whenever you push new changes, bug fixes, or security updates to your GitHub repository (`main` branch), run these commands in a **PythonAnywhere Bash Console** to update **[https://abhiramportfolio.pythonanywhere.com](https://abhiramportfolio.pythonanywhere.com)**.
 
-#### Method 1: Instant 1-Line Update (Fastest & Recommended)
-Open a **Bash Console** in PythonAnywhere and paste this single command:
+#### Method 1: Instant 1-Line Update (Recommended)
+Open a **Bash Console** in PythonAnywhere and run:
 ```bash
 cd ~/portfolio && source ~/.virtualenvs/portfolio-venv/bin/activate && git pull origin main && pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput && touch /var/www/abhiramportfolio_pythonanywhere_com_wsgi.py
 ```
-This automatically pulls your code, updates packages, migrates the database, refreshes static files, and reloads your web app in seconds!
+If you also want to verify production Django checks before reloading uWSGI:
+```bash
+cd ~/portfolio && source ~/.virtualenvs/portfolio-venv/bin/activate && git pull origin main && pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput && DJANGO_DEBUG=False python manage.py check --deploy && touch /var/www/abhiramportfolio_pythonanywhere_com_wsgi.py
+```
 
 #### Method 2: Using the Included Shell Script (`update_pa.sh`)
 Inside your PythonAnywhere Bash Console:
 ```bash
-cd ~/portfolio
-bash update_pa.sh
+cd ~/portfolio && bash update_pa.sh
 ```
 
 #### Method 3: Step-by-Step Manual Update
-If you prefer running each step individually:
 ```bash
-# 1. Navigate to the repository
+# 1. Navigate to the repository and activate the virtualenv
 cd ~/portfolio
+source ~/.virtualenvs/portfolio-venv/bin/activate
 
-# 2. Activate virtual environment
-workon portfolio-venv
-
-# 3. Pull latest code from GitHub
+# 2. Pull latest code from GitHub
 git pull origin main
 
-# 4. Install any new dependencies
+# 3. Install/upgrade dependencies & apply database migrations
 pip install -r requirements.txt
-
-# 5. Apply any database migrations
 python manage.py migrate
 
-# 6. Collect updated static assets (CSS, JS, images)
+# 4. Collect updated static assets (CSS, JS, admin assets)
 python manage.py collectstatic --noinput
 
-# 7. Reload the live web application
+# 5. Verify production configuration (0 issues expected)
+DJANGO_DEBUG=False python manage.py check --deploy
+
+# 6. Reload the live web application
 touch /var/www/abhiramportfolio_pythonanywhere_com_wsgi.py
-# (Or click the green 'Reload abhiramportfolio.pythonanywhere.com' button in the Web tab)
 ```
+
+#### Updating WSGI & Production Environment Variables (Security Hardening)
+1. **Sync WSGI proxy flags** (required so HTTPS redirect & real client IPs work cleanly behind PythonAnywhere's reverse proxy):
+   - Either copy the tracked WSGI template *(only if your secrets live in `~/portfolio/.env`, NOT pasted directly in `/var/www/abhiramportfolio_pythonanywhere_com_wsgi.py`)*:
+     ```bash
+     cp ~/portfolio/pythonanywhere_wsgi.py /var/www/abhiramportfolio_pythonanywhere_com_wsgi.py && touch /var/www/abhiramportfolio_pythonanywhere_com_wsgi.py
+     ```
+   - Or open `/var/www/abhiramportfolio_pythonanywhere_com_wsgi.py` in the **Web** tab and verify these lines exist before `get_wsgi_application()`:
+     ```python
+     os.environ.setdefault('DJANGO_DEBUG', 'False')
+     os.environ.setdefault('DJANGO_TRUST_PROXY_HEADERS', 'True')
+     os.environ.setdefault('DJANGO_BEHIND_HTTPS_PROXY', 'True')
+     ```
+2. **Verify `~/portfolio/.env` secrets** (never commit `.env` or `.django_secret_key` to Git):
+   ```bash
+   nano ~/portfolio/.env
+   ```
+   Ensure `DJANGO_SECRET_KEY` (50+ random chars), `DJANGO_DEBUG=False`, and `GEMINI_API_KEY` are set.
+3. **Rotate operator password (if needed)**:
+   ```bash
+   cd ~/portfolio && source ~/.virtualenvs/portfolio-venv/bin/activate && python manage.py changepassword admin
+   ```
+
+#### Troubleshooting `git pull` Merge Conflicts on PythonAnywhere
+If `git pull origin main` stops because local server edits (for example inside `db.sqlite3` or `staticfiles/`) would be overwritten:
+```bash
+# Back up your live database first, then reset tracked build artifacts before pulling:
+cp ~/portfolio/db.sqlite3 ~/db.sqlite3.bak
+cd ~/portfolio && git checkout -- staticfiles/ && git pull origin main
+```
+*(If `db.sqlite3` was previously tracked before being ignored in `.gitignore`, move the backup cleanly back into `~/portfolio/db.sqlite3` after pulling, then run `migrate` and `collectstatic --noinput`.)*
 
 #### Verification After Updating:
 1. Open your live website: **[https://abhiramportfolio.pythonanywhere.com](https://abhiramportfolio.pythonanywhere.com)**
-2. Do a hard refresh in your browser (`Ctrl + F5` or `Cmd + Shift + R`) to bypass cached CSS/JS.
-3. Access your operator portal: **[https://abhiramportfolio.pythonanywhere.com/portal/login/](https://abhiramportfolio.pythonanywhere.com/portal/login/)** to check visitor messages and make live edits.
+2. Do a hard refresh in your browser (`Ctrl + F5` or `Cmd + Shift + R`) to clear cached CSS/JS.
+3. Access your operator portal: **[https://abhiramportfolio.pythonanywhere.com/portal/login/](https://abhiramportfolio.pythonanywhere.com/portal/login/)** and verify login + CAPTCHA + inbox/settings functionality.
 
 ---
 
@@ -399,8 +434,14 @@ The portfolio features 8 production-grade projects spanning network simulation, 
 - Supports three publishing modes via `GEMINI_ARTICLE_PUBLISH_MODE`: `review` (default: saves as **Pending Review**), `auto` (publishes immediately), or `manual` (saves as **Draft**).
 
 ### C. Environment Configuration (`.env` / PythonAnywhere WSGI)
-Configure these environment variables securely on the server (never commit `.env` to GitHub):
+Configure these environment variables securely on the server (never commit `.env` or `.django_secret_key` to GitHub):
 ```env
+DJANGO_SECRET_KEY=replace_with_50_plus_char_cryptographic_random_secret
+DJANGO_DEBUG=False
+DJANGO_TRUST_PROXY_HEADERS=True
+DJANGO_BEHIND_HTTPS_PROXY=True
+DJANGO_ALLOWED_HOSTS=127.0.0.1,localhost,abhiramportfolio.pythonanywhere.com,.pythonanywhere.com
+
 GEMINI_API_KEY=your_secret_gemini_api_key
 GEMINI_MODEL=gemini-3.5-flash-lite
 GEMINI_DAILY_ARTICLE_ENABLED=True
@@ -459,27 +500,30 @@ GEMINI_API_TIMEOUT=25
 
 ## 10. Verification & Test Suite
 
-The automated test suite covers views, models, forms, security filters, rate limiting, DoS resistance, subnet calculator API, ramo.ai error/quota handling, and NETWORK INTELLIGENCE generation/idempotency/editorial workflow.
+The automated test suite covers views, models, forms, OWASP Top 10 controls (`core/security_tests.py`), `@require_POST` CSRF hardening, CAPTCHA expiration & brute-force `429` lockouts, open-redirect blocking, file upload/URL validation, path traversal containment, rate limiting, DoS resistance, ramo.ai error/quota handling, and NETWORK INTELLIGENCE generation/editorial workflows.
 
-Run all tests:
+Run all tests and production deployment checks:
 ```powershell
 python manage.py test
+python manage.py check --deploy
 ```
 
 Expected output:
 ```text
 Creating test database for alias 'default'...
-.............................................................
+.......................................................................
 ----------------------------------------------------------------------
-Ran 61 tests in 17.0s
+Ran 71 tests in 37.74s
 
 OK
 Destroying test database for alias 'default'...
 ```
 
+See [SECURITY_AUDIT_REPORT.md](SECURITY_AUDIT_REPORT.md) for the complete OWASP Top 10 audit findings and verification matrix.
+
 ---
 
-## 9. License & Credits
+## 11. License & Credits
 
 - Designed and engineered for **Abhiram Anil**.
 - Built with Python & Django.
