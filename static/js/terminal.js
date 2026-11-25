@@ -42,6 +42,8 @@ AVAILABLE COMMANDS:
   github          - Open GitHub profile directly in new tab
   linkedin        - Open LinkedIn profile directly in new tab
   instagram       - Open Instagram profile directly in new tab
+  nexus           - Open NEXUS AI Networking & Cybersecurity Assistant
+  intel           - Open NETWORK INTELLIGENCE Daily Articles Archive
   admin           - Launch NOC Operator Admin Login Portal
   whoami          - Current session user identity
   date            - Current system timestamp
@@ -278,6 +280,22 @@ Instagram: https://www.instagram.com/im_abhiram__/
       setTimeout(() => {
         window.location.href = '/portal/login/';
       }, 500);
+      return;
+    }
+
+    if (mainCmd === 'nexus' || mainCmd === 'ai') {
+      appendOutput('[OPENING NEXUS AI ASSISTANT PANEL]');
+      if (terminalBackdrop) terminalBackdrop.classList.remove('open');
+      const launcher = document.getElementById('nexus-launcher-btn');
+      if (launcher) launcher.click();
+      return;
+    }
+
+    if (mainCmd === 'intel' || mainCmd === 'intelligence') {
+      appendOutput('[NAVIGATING TO NETWORK INTELLIGENCE BRIEFINGS]');
+      setTimeout(() => {
+        window.location.href = '/intelligence/';
+      }, 450);
       return;
     }
 

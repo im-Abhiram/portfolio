@@ -8,6 +8,15 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Load local .env file if present (never committed to git)
+try:
+    from dotenv import load_dotenv
+    _env_file = BASE_DIR / '.env'
+    if _env_file.exists():
+        load_dotenv(_env_file)
+except ImportError:
+    pass
+
 # Security settings
 SECRET_KEY = os.environ.get(
     'DJANGO_SECRET_KEY',
@@ -45,6 +54,8 @@ INSTALLED_APPS = [
     'journal.apps.JournalConfig',
     'contact.apps.ContactConfig',
     'portal.apps.PortalConfig',
+    'nexus.apps.NexusConfig',
+    'intelligence.apps.IntelligenceConfig',
 ]
 
 MIDDLEWARE = [

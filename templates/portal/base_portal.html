@@ -75,6 +75,20 @@
         <i class="bi bi-briefcase"></i>
         <span>Work Experience</span>
       </a>
+      <a href="{% url 'portal:journal_list' %}" class="portal-nav-link {% if active_tab == 'journal' %}active{% endif %}">
+        <i class="bi bi-journal-text"></i>
+        <span>Field Notes Posts</span>
+      </a>
+
+      <div class="portal-nav-section-label">AI & INTELLIGENCE</div>
+      <a href="{% url 'portal:intelligence_list' %}" class="portal-nav-link {% if active_tab == 'intelligence' %}active{% endif %}">
+        <i class="bi bi-stars"></i>
+        <span>Network Intelligence</span>
+      </a>
+      <a href="{% url 'portal:ai_settings' %}" class="portal-nav-link {% if active_tab == 'ai_settings' %}active{% endif %}">
+        <i class="bi bi-robot"></i>
+        <span>Gemini AI Config</span>
+      </a>
 
       <div class="portal-nav-section-label">SYSTEM TOOLS</div>
       <a href="/sys-admin/" target="_blank" class="portal-nav-link">

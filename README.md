@@ -54,6 +54,25 @@ D:\portfolio\
 │   ├── models.py             # BlogCategory, BlogPost, SecurityNote
 │   ├── views.py              # Field notes archive and article reader
 │   └── urls.py               # Journal routes
+├── ai_services/
+│   └── gemini.py             # Secure Gemini REST API v1beta client & model fallback
+├── nexus/
+│   ├── models.py             # Anonymized ChatUsageLog (rate/quota limiting, zero chat text)
+│   ├── prompts.py            # Live portfolio-grounded system prompt + security guardrails
+│   ├── views.py              # CSRF-protected POST chat API & status endpoints
+│   └── tests.py              # Security, quota, error-handling, and validation tests
+├── intelligence/
+│   ├── models.py             # DailyArticle, ArticleGenerationLog, AISettings, IntelSubscriber
+│   ├── topics.py             # Curated multi-category technical topic bank
+│   ├── generator.py          # Idempotent article generation, validation & duplicate guard
+│   ├── views.py              # Searchable/filterable archive, editorial reader & RSS feed
+│   ├── management/commands/
+│   │   └── generate_daily_article.py # Idempotent scheduled/manual CLI generator
+│   └── tests.py              # Generation, dedup, portal workflow & view tests
+├── portal/
+│   ├── forms.py              # Operator Portal forms (Profile, Settings, DailyArticle, BlogPost)
+│   ├── views.py              # Custom GUI admin views, CAPTCHA login, AI post editor
+│   └── captcha.py            # Zero-dependency Pillow visual CAPTCHA engine
 ├── contact/
 │   ├── models.py             # ContactMessage database model
 │   ├── forms.py              # Honeypot-protected secure Django form
@@ -239,7 +258,13 @@ The application includes a dedicated, dark NOC-themed **Operator Management Port
    - Manage the browser title (`<title>`), Brand Tagline, and NOC status text.
    - Upload a new PDF/DOCX resume file and customize the download filename.
    - Enable or disable specific portfolio sections on the fly (Lab section, Certifications, Field Notes, Terminal CLI).
-5. **Portfolio Data Management**:
+5. **Network Intelligence & Field Notes Management (`/portal/intelligence/` & `/portal/journal/`)**:
+   - Trigger **Generate Today's Article** manually, regenerate failed attempts, approve & publish (`Pending Review` &rarr; `Published`), unpublish, archive, or delete articles.
+   - **Full Post Editor**: Edit any structured section of AI-generated `DailyArticle` briefings (or `BlogPost` field notes) cleanly through forms.
+   - **Generation Logs & Topic Bank**: Review past API runs, token usage, errors, and unused topics.
+   - **Offline JSON Import (`/portal/intelligence/import/`)**: Paste JSON generated locally if PythonAnywhere free outbound network restricts Gemini.
+   - **Gemini AI Config (`/portal/ai-settings/`)**: Configure publishing mode (`review`, `auto`, `manual`), visitor daily quotas, and chatbot toggle without exposing `GEMINI_API_KEY`.
+6. **Portfolio Data Management**:
    - **Projects (`/portal/projects/`)**: Add, edit, or delete deployed applications, live links, and GitHub repositories.
    - **Skills Matrix (`/portal/skills/`)**: Add, edit, or categorize networking, sysadmin, cybersecurity, and software skills.
    - **Certifications (`/portal/certifications/`)**: Add or edit accredited industry credentials.
@@ -359,7 +384,53 @@ The portfolio features 8 production-grade projects spanning network simulation, 
 
 ---
 
-## 8. Security Controls & Defense-in-Depth
+## 8. Gemini AI Features & PythonAnywhere Scheduling
+
+### A. NEXUS AI — Networking & Cybersecurity Assistant
+- Floating dark graphite assistant accessible site-wide (stacked cleanly above the CLI Console pill so zero controls are covered).
+- Powered server-side via Google Gemini REST API (`ai_services/gemini.py`) using `x-goog-api-key` headers — API credentials are never sent to the browser or exposed in HTML/JS.
+- Grounds portfolio answers strictly on Abhiram Anil's live verified database profile while handling beginner, intermediate, and advanced networking, cybersecurity, sysadmin, and programming questions.
+- Ephemeral client-side `sessionStorage` conversation history (never stored permanently in SQLite), safe DOM Markdown rendering (zero raw `innerHTML`), copy buttons for code & replies, and per-IP/session burst + daily quota rate limiting.
+
+### B. NETWORK INTELLIGENCE — Automated Daily Article Publisher
+- Dedicated publication interface at `#network-intelligence` and `/intelligence/` (`"One day. One concept. Better technical knowledge."`).
+- Generates structured 16-part technical articles stored safely in `DailyArticle.content` (`JSONField`) and rendered with Django auto-escaping (no untrusted AI HTML execution).
+- Covers 7 categories (`Networking`, `Network Security`, `Cybersecurity`, `System Administration`, `Web Application Security`, `IT Infrastructure`, `Python & Development`) with SHA-256 content hashing and similarity checks to prevent duplicates.
+- Supports three publishing modes via `GEMINI_ARTICLE_PUBLISH_MODE`: `review` (default: saves as **Pending Review**), `auto` (publishes immediately), or `manual` (saves as **Draft**).
+
+### C. Environment Configuration (`.env` / PythonAnywhere WSGI)
+Configure these environment variables securely on the server (never commit `.env` to GitHub):
+```env
+GEMINI_API_KEY=your_secret_gemini_api_key
+GEMINI_MODEL=gemini-3.5-flash-lite
+GEMINI_DAILY_ARTICLE_ENABLED=True
+GEMINI_ARTICLE_PUBLISH_MODE=review
+GEMINI_DAILY_REQUEST_LIMIT=10
+GEMINI_CHAT_ENABLED=True
+GEMINI_API_TIMEOUT=25
+```
+
+### D. Scheduling & PythonAnywhere Free Tier Compatibility
+1. **Verify Outbound Access on PythonAnywhere**:
+   PythonAnywhere free accounts route outbound HTTP traffic through an allowlist. Run a quick test in the PythonAnywhere **Bash Console**:
+   ```bash
+   cd ~/portfolio && workon portfolio-venv && python manage.py generate_daily_article --dry-run
+   ```
+   If live generation returns a proxy/connection restriction for `generativelanguage.googleapis.com`, request its addition via PythonAnywhere's Help / Allowlist Request form, **or use the built-in Offline Import Fallback**:
+   - Run locally: `python manage.py generate_daily_article --export-json today.json`
+   - Paste/import `today.json` in `/portal/intelligence/import/`.
+2. **Automated Daily Schedule (Tasks Tab)**:
+   If scheduled tasks are enabled on your PythonAnywhere account, add a daily task in the **Tasks** tab:
+   ```bash
+   /home/abhiramportfolio/.virtualenvs/portfolio-venv/bin/python /home/abhiramportfolio/portfolio/manage.py generate_daily_article
+   ```
+   The command is strictly idempotent (`Asia/Kolkata` timezone by default): running it multiple times on the same date never duplicates or overwrites a published article.
+3. **Manual Admin Button Fallback**:
+   If scheduled tasks are unavailable on your free tier, click **Generate Today's Article** anytime inside `/portal/intelligence/`.
+
+---
+
+## 9. Security Controls & Defense-in-Depth
 
 | Security Vector | Implementation & Defensive Mechanism |
 | :--- | :--- |
@@ -380,12 +451,15 @@ The portfolio features 8 production-grade projects spanning network simulation, 
 | **Path Traversal Defense** | Resume file serving verifies requested paths remain strictly within canonical `MEDIA_ROOT` bounds |
 | **SQL Injection** | Exclusively parameterized queries via Django ORM; zero raw string SQL concatenation |
 | **Audit Log Immutability** | Contact message logs in Django Admin are strictly read-only (`has_add_permission=False`) |
+| **AI Credential Isolation** | `GEMINI_API_KEY` loaded solely from server env (`.env` / WSGI), passed via header (`x-goog-api-key`), scrubbed from errors, never saved in DB or templates |
+| **AI Input & Output Hardening** | Strict 32KB payload limit, 1500-char message cap, history capping, prompt-injection boundaries, zero shell/DB tool execution, safe DOM Markdown & escaped JSON template rendering |
+| **AI Rate & Quota Protection** | SQLite-backed anonymized burst + daily visitor quota enforcement (`ChatUsageLog` stores zero prompt text) |
 
 ---
 
-## 9. Verification & Test Suite
+## 10. Verification & Test Suite
 
-The automated test suite covers views, models, forms, security filters, rate limiting, DoS resistance, and the subnet calculator API.
+The automated test suite covers views, models, forms, security filters, rate limiting, DoS resistance, subnet calculator API, NEXUS AI error/quota handling, and NETWORK INTELLIGENCE generation/idempotency/editorial workflow.
 
 Run all tests:
 ```powershell
@@ -395,9 +469,9 @@ python manage.py test
 Expected output:
 ```text
 Creating test database for alias 'default'...
-.........................
+.............................................................
 ----------------------------------------------------------------------
-Ran 25 tests in 3.0s
+Ran 61 tests in 17.0s
 
 OK
 Destroying test database for alias 'default'...

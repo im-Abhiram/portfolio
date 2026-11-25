@@ -1,0 +1,91 @@
+{% if ai_status.chat_enabled %}
+<!-- NEXUS AI Floating Launcher (Positioned above CLI Console so zero UI overlap occurs) -->
+<button type="button"
+        id="nexus-launcher-btn"
+        class="nexus-launcher-btn {% if not ai_status.api_key_configured %}offline{% endif %}"
+        aria-label="Open NEXUS AI Networking & Cybersecurity Assistant"
+        title="Ask NEXUS AI (Networking, Security & Portfolio)">
+  <span class="nexus-launcher-dot"></span>
+  <i class="bi bi-stars"></i>
+  <span>NEXUS AI</span>
+</button>
+
+<!-- NEXUS AI Floating Chat Panel -->
+<aside id="nexus-chat-panel"
+       class="nexus-chat-panel"
+       role="dialog"
+       aria-modal="false"
+       aria-hidden="true"
+       aria-label="NEXUS AI Assistant"
+       data-chat-url="{% url 'nexus:chat' %}"
+       data-status-url="{% url 'nexus:status' %}"
+       data-available="{% if ai_status.chat_enabled and ai_status.api_key_configured %}true{% else %}false{% endif %}">
+
+  <div class="nexus-chat-header">
+    <div class="nexus-header-brand">
+      <div class="nexus-avatar-badge">
+        <i class="bi bi-cpu-fill"></i>
+      </div>
+      <div class="nexus-title-group">
+        <div class="nexus-title">
+          <span>NEXUS AI</span>
+          {% if ai_status.api_key_configured %}
+            <span class="badge-tag" style="font-size: 0.6rem; padding: 0.1rem 0.35rem;">ONLINE</span>
+          {% else %}
+            <span class="badge-tag" style="font-size: 0.6rem; padding: 0.1rem 0.35rem; color: var(--accent-amber); border-color: var(--accent-amber);">OFFLINE</span>
+          {% endif %}
+        </div>
+        <div class="nexus-subtitle">Your Networking &amp; Cybersecurity Assistant.</div>
+      </div>
+    </div>
+
+    <div class="nexus-header-actions">
+      <button type="button" id="nexus-new-chat-btn" class="nexus-icon-btn" title="New Conversation">
+        <i class="bi bi-plus-lg"></i>
+      </button>
+      <button type="button" id="nexus-clear-btn" class="nexus-icon-btn" title="Clear Chat">
+        <i class="bi bi-trash3"></i>
+      </button>
+      <button type="button" id="nexus-close-btn" class="nexus-icon-btn" title="Close [ESC]" aria-label="Close NEXUS AI">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="nexus-status-ribbon">
+    <span>SESSION STORAGE (EPHEMERAL)</span>
+    <span id="nexus-quota-pill" class="nexus-quota-pill">
+      {% if ai_status.api_key_configured %}
+        {{ ai_status.daily_limit }} queries/day
+      {% else %}
+        API not configured
+      {% endif %}
+    </span>
+  </div>
+
+  <div id="nexus-messages-body" class="nexus-messages-body" aria-live="polite">
+    <!-- Messages populated by nexus-chat.js -->
+  </div>
+
+  <form id="nexus-chat-form" class="nexus-composer">
+    <div class="nexus-input-row">
+      <textarea id="nexus-input"
+                class="nexus-textarea"
+                rows="1"
+                maxlength="1500"
+                placeholder="{% if ai_status.api_key_configured %}Ask about VLANs, subnetting, Nmap, or Abhiram...{% else %}NEXUS AI currently offline...{% endif %}"
+                {% if not ai_status.api_key_configured %}disabled{% endif %}></textarea>
+      <button type="submit"
+              id="nexus-send-btn"
+              class="nexus-send-btn"
+              title="Send message"
+              {% if not ai_status.api_key_configured %}disabled{% endif %}>
+        <i class="bi bi-send-fill"></i>
+      </button>
+    </div>
+    <div class="nexus-disclaimer">
+      Gemini Free Tier limits apply &bull; Verify commands in a lab before production use.
+    </div>
+  </form>
+</aside>
+{% endif %}

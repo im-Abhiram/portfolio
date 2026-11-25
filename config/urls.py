@@ -23,7 +23,11 @@ urlpatterns = [
     # 3. NOC Operations Portal & CMS
     path('portal/', include('portal.urls', namespace='portal')),
 
-    # 4. Public Portfolio Routes
+    # 4. AI Assistant & Network Intelligence Publisher
+    path('nexus/', include('nexus.urls', namespace='nexus')),
+    path('intelligence/', include('intelligence.urls', namespace='intelligence')),
+
+    # 5. Public Portfolio Routes
     path('', home_view, name='home'),
     path('resume/download/', download_resume_view, name='download_resume'),
     path('portfolio/', include('portfolio.urls', namespace='portfolio')),

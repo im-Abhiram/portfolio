@@ -37,6 +37,8 @@
 
   <!-- Core Portfolio Design System -->
   <link rel="stylesheet" href="{% static 'css/portfolio.css' %}">
+  <!-- AI Modules (NEXUS AI & NETWORK INTELLIGENCE) -->
+  <link rel="stylesheet" href="{% static 'css/ai-modules.css' %}">
 
   {% block extra_head %}{% endblock %}
 </head>
@@ -82,12 +84,21 @@
           {% if site_settings.show_lab_section %}
           <li><a href="{% url 'home' %}#lab" class="nav-link-item">Infra Lab</a></li>
           {% endif %}
+          <li><a href="{% url 'home' %}#network-intelligence" class="nav-link-item">Intelligence</a></li>
           <li><a href="{% url 'home' %}#contact" class="nav-link-item">Contact</a></li>
         </ul>
       </nav>
 
       <!-- Action Buttons -->
       <div class="navbar-actions">
+        {% if ai_status.chat_enabled %}
+        <!-- NEXUS AI Quick Toggle -->
+        <button type="button" id="nav-nexus-btn" class="hud-btn hud-btn-icon-only" title="Ask NEXUS AI Assistant"
+          aria-label="Open NEXUS AI Assistant">
+          <i class="bi bi-stars" style="color: var(--accent-lime);"></i>
+        </button>
+        {% endif %}
+
         <!-- Interactive Terminal Trigger -->
         {% if site_settings.show_terminal_feature %}
         <button type="button" id="nav-terminal-btn" class="hud-btn hud-btn-icon-only" title="Open HUD CLI Terminal (`)"
@@ -169,6 +180,9 @@
   </div>
   {% endif %}
 
+  <!-- NEXUS AI Floating Chatbot Widget -->
+  {% include 'includes/nexus_chatbot.html' %}
+
   <!-- Back to Top Button -->
   <button type="button" id="back-to-top" title="Back to top" aria-label="Back to top">
     <i class="bi bi-arrow-up"></i>
@@ -224,6 +238,9 @@
 
   <!-- Scripts -->
   <script src="{% static 'js/main.js' %}"></script>
+  {% if ai_status.chat_enabled %}
+  <script src="{% static 'js/nexus-chat.js' %}"></script>
+  {% endif %}
   {% if site_settings.show_terminal_feature %}
   <script src="{% static 'js/terminal.js' %}"></script>
   {% endif %}

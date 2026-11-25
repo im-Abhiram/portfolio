@@ -46,6 +46,21 @@
     <div class="telemetry-value">{{ total_certs }}</div>
     <div class="telemetry-desc">Industry credentials</div>
   </div>
+
+  <div class="telemetry-card highlight">
+    <div class="telemetry-card-top">
+      <span class="telemetry-label">Network Intelligence</span>
+      <div class="telemetry-icon"><i class="bi bi-stars"></i></div>
+    </div>
+    <div class="telemetry-value">{{ total_intel_published }}</div>
+    <div class="telemetry-desc">
+      {% if pending_intel > 0 %}
+        <span style="color: var(--portal-amber); font-weight: 700;">{{ pending_intel }} pending review</span>
+      {% else %}
+        Published concepts &bull; Gemini: {% if ai_cfg.api_key_configured %}READY{% else %}OFFLINE{% endif %}
+      {% endif %}
+    </div>
+  </div>
 </div>
 
 <!-- Main Page Status Summary & Quick Actions -->
@@ -152,6 +167,22 @@
         <span style="display: flex; align-items: center; gap: 8px;">
           <i class="bi bi-patch-check" style="color: var(--portal-blue); font-size: 1.1rem;"></i>
           <strong>Certifications ({{ total_certs }})</strong>
+        </span>
+        <i class="bi bi-chevron-right"></i>
+      </a>
+
+      <a href="{% url 'portal:intelligence_list' %}" class="portal-btn-sm portal-btn-outline" style="padding: 12px; justify-content: space-between;">
+        <span style="display: flex; align-items: center; gap: 8px;">
+          <i class="bi bi-stars" style="color: var(--portal-lime); font-size: 1.1rem;"></i>
+          <strong>Network Intelligence Posts ({{ total_intel_published }})</strong>
+        </span>
+        <i class="bi bi-chevron-right"></i>
+      </a>
+
+      <a href="{% url 'portal:journal_list' %}" class="portal-btn-sm portal-btn-outline" style="padding: 12px; justify-content: space-between;">
+        <span style="display: flex; align-items: center; gap: 8px;">
+          <i class="bi bi-journal-text" style="color: var(--portal-green); font-size: 1.1rem;"></i>
+          <strong>Field Notes Posts ({{ total_blog_posts }})</strong>
         </span>
         <i class="bi bi-chevron-right"></i>
       </a>

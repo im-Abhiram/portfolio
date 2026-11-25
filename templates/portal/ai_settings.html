@@ -1,0 +1,85 @@
+{% extends 'portal/base_portal.html' %}
+
+{% block page_title %}Gemini AI Config // Non-Secret Controls{% endblock %}
+
+{% block content %}
+<div class="portal-card" style="max-width: 820px; margin: 0 auto;">
+  <div class="portal-card-header">
+    <div>
+      <h3 class="portal-card-title"><i class="bi bi-robot"></i> AI Features & Quota Governance</h3>
+      <div class="portal-card-subtitle">Configure NEXUS AI Chatbot and NETWORK INTELLIGENCE publishing workflow</div>
+    </div>
+  </div>
+
+  <!-- Server Environment API Key Health (Never displays actual secret!) -->
+  <div style="margin-bottom: 24px; padding: 16px; background: #0F1310; border: 1px solid var(--portal-border); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+    <div>
+      <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--portal-text-dim);">SERVER ENVIRONMENT CREDENTIAL (GEMINI_API_KEY)</div>
+      <div style="font-size: 0.85rem; color: var(--portal-text-muted); margin-top: 4px;">
+        Stored exclusively in <code style="color: var(--portal-lime);">.env</code> / WSGI environment variables. Never stored in SQLite or exposed to browsers.
+      </div>
+    </div>
+    {% if ai_cfg.api_key_configured %}
+      <span class="portal-pill portal-pill-green"><i class="bi bi-shield-fill-check"></i> KEY CONFIGURED</span>
+    {% else %}
+      <span class="portal-pill portal-pill-red"><i class="bi bi-exclamation-octagon"></i> KEY MISSING</span>
+    {% endif %}
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+      <label class="portal-switch-label">
+        {{ form.chat_enabled }}
+        <span>Enable NEXUS AI Chatbot</span>
+      </label>
+
+      <label class="portal-switch-label">
+        {{ form.daily_article_enabled }}
+        <span>Enable Daily Article Generator</span>
+      </label>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+      <div class="portal-form-group">
+        <label class="portal-label">Publishing Workflow Mode</label>
+        {{ form.article_publish_mode }}
+        <div class="portal-help">Review Before Publishing is recommended to prevent unreviewed auto-publishing.</div>
+      </div>
+
+      <div class="portal-form-group">
+        <label class="portal-label">Active Flash Model Override</label>
+        {{ form.preferred_model }}
+        <div class="portal-help">Currently effective: {{ ai_cfg.model }}</div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+      <div class="portal-form-group">
+        <label class="portal-label">Daily Chat Limit / Visitor</label>
+        {{ form.chat_daily_limit_per_visitor }}
+      </div>
+
+      <div class="portal-form-group">
+        <label class="portal-label">Burst Rate / Min / IP</label>
+        {{ form.chat_rate_limit_per_minute }}
+      </div>
+
+      <div class="portal-form-group">
+        <label class="portal-label">Schedule Timezone</label>
+        {{ form.article_generation_timezone }}
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 12px; margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--portal-border);">
+      <button type="submit" class="portal-btn-sm portal-btn-accent" style="padding: 10px 24px; cursor: pointer;">
+        <i class="bi bi-check2-circle"></i> Save AI Settings
+      </button>
+      <a href="{% url 'portal:intelligence_list' %}" class="portal-btn-sm portal-btn-outline" style="padding: 10px 18px;">
+        Back to Network Intelligence
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}

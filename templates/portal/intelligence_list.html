@@ -1,0 +1,201 @@
+{% extends 'portal/base_portal.html' %}
+
+{% block page_title %}Network Intelligence // Automated Publisher{% endblock %}
+
+{% block content %}
+<!-- AI Publisher Control Panel -->
+<div class="portal-card">
+  <div class="portal-card-header" style="flex-wrap: wrap; gap: 16px;">
+    <div>
+      <h3 class="portal-card-title"><i class="bi bi-stars" style="color: var(--portal-lime);"></i> Daily Article Publisher</h3>
+      <div class="portal-card-subtitle">
+        Schedule Date ({{ ai_cfg.timezone }}): <strong>{{ today_date|date:"M d, Y" }}</strong> &bull;
+        Publish Mode: <span class="portal-pill portal-pill-lime">{{ ai_cfg.publish_mode|upper }}</span> &bull;
+        Gemini Key:
+        {% if ai_cfg.api_key_configured %}
+          <span class="portal-pill portal-pill-green">CONFIGURED (ENV)</span>
+        {% else %}
+          <span class="portal-pill portal-pill-red">NOT CONFIGURED</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+      <a href="{% url 'portal:intelligence_logs' %}" class="portal-btn-sm portal-btn-outline">
+        <i class="bi bi-clock-history"></i> Generation Logs & Topics
+      </a>
+      <a href="{% url 'portal:intelligence_import' %}" class="portal-btn-sm portal-btn-outline">
+        <i class="bi bi-upload"></i> Import JSON
+      </a>
+      <a href="{% url 'portal:intelligence_create' %}" class="portal-btn-sm portal-btn-outline">
+        <i class="bi bi-plus-circle"></i> Write Manual Post
+      </a>
+    </div>
+  </div>
+
+  <!-- Today's Generation Controls -->
+  <div style="background: #0F1310; border: 1px solid var(--portal-border); border-radius: 8px; padding: 18px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;">
+    <div>
+      {% if today_article %}
+        <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--portal-green); margin-bottom: 4px;">
+          TODAY'S SLOT POPULATED ({{ today_date|date:"Y-m-d" }})
+        </div>
+        <div style="font-weight: 700; color: var(--portal-text);">{{ today_article.title }}</div>
+        <div style="font-size: 0.8rem; color: var(--portal-text-muted); margin-top: 2px;">
+          Status: <strong>{{ today_article.get_status_display }}</strong> &bull; Category: {{ today_article.category }}
+        </div>
+      {% elif latest_failed_today %}
+        <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--portal-red); margin-bottom: 4px;">
+          LAST GENERATION ATTEMPT FAILED
+        </div>
+        <div style="font-size: 0.85rem; color: var(--portal-text-muted);">
+          Topic attempted: <strong>{{ latest_failed_today.selected_topic }}</strong> &mdash; {{ latest_failed_today.error_message|truncatechars:140 }}
+        </div>
+      {% else %}
+        <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--portal-amber); margin-bottom: 4px;">
+          NO ARTICLE GENERATED FOR TODAY YET
+        </div>
+        <div style="font-size: 0.85rem; color: var(--portal-text-muted);">
+          Generate today's concept using Gemini ({{ ai_cfg.model }}) or schedule <code style="color: var(--portal-lime);">python manage.py generate_daily_article</code>.
+        </div>
+      {% endif %}
+    </div>
+
+    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+      {% if not today_article %}
+        <form method="post" action="{% url 'portal:intelligence_generate' %}" style="display: flex; gap: 8px; align-items: center;">
+          {% csrf_token %}
+          <input type="text" name="topic" placeholder="Optional custom topic..." class="portal-input" style="width: 210px; padding: 7px 12px; font-size: 0.8rem;">
+          <button type="submit" class="portal-btn-sm portal-btn-accent" style="cursor: pointer; padding: 8px 14px;">
+            <i class="bi bi-magic"></i> Generate Today's Article
+          </button>
+        </form>
+      {% elif today_article.status != 'published' %}
+        <form method="post" action="{% url 'portal:intelligence_publish' today_article.pk %}" style="display: inline;">
+          {% csrf_token %}
+          <button type="submit" class="portal-btn-sm portal-btn-accent" style="cursor: pointer;">
+            <i class="bi bi-check2-circle"></i> Approve & Publish Today's Post
+          </button>
+        </form>
+        <form method="post" action="{% url 'portal:intelligence_generate' %}" style="display: inline;" onsubmit="return confirm('Regenerate non-published draft for today?');">
+          {% csrf_token %}
+          <input type="hidden" name="regenerate" value="1">
+          <button type="submit" class="portal-btn-sm portal-btn-outline" style="cursor: pointer;">
+            <i class="bi bi-arrow-repeat"></i> Regenerate
+          </button>
+        </form>
+      {% else %}
+        <a href="{% url 'intelligence:detail' today_article.slug %}" target="_blank" class="portal-btn-sm portal-btn-accent">
+          <i class="bi bi-box-arrow-up-right"></i> View Published Today
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Articles Table -->
+<div class="portal-card">
+  <div class="portal-filter-bar">
+    <div class="portal-filter-tabs">
+      <a href="{% url 'portal:intelligence_list' %}" class="portal-tab-btn {% if status_filter == 'all' %}active{% endif %}">All ({{ counts.all }})</a>
+      <a href="{% url 'portal:intelligence_list' %}?status=pending_review" class="portal-tab-btn {% if status_filter == 'pending_review' %}active{% endif %}">Pending Review ({{ counts.pending_review }})</a>
+      <a href="{% url 'portal:intelligence_list' %}?status=published" class="portal-tab-btn {% if status_filter == 'published' %}active{% endif %}">Published ({{ counts.published }})</a>
+      <a href="{% url 'portal:intelligence_list' %}?status=draft" class="portal-tab-btn {% if status_filter == 'draft' %}active{% endif %}">Drafts ({{ counts.draft }})</a>
+      <a href="{% url 'portal:intelligence_list' %}?status=archived" class="portal-tab-btn {% if status_filter == 'archived' %}active{% endif %}">Archived ({{ counts.archived }})</a>
+    </div>
+  </div>
+
+  {% if items %}
+    <div class="portal-table-container">
+      <table class="portal-table">
+        <thead>
+          <tr>
+            <th>Schedule / Date</th>
+            <th>Article Title & Category</th>
+            <th>Status</th>
+            <th>Read Time</th>
+            <th style="text-align: right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for art in items %}
+            <tr>
+              <td style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--portal-text-muted); white-space: nowrap;">
+                {{ art.scheduled_date|date:"Y-m-d"|default:art.generated_at|date:"Y-m-d" }}
+                {% if art.ai_generated %}
+                  <div style="font-size: 0.65rem; color: var(--portal-lime);">AI GENERATED</div>
+                {% endif %}
+              </td>
+              <td>
+                <div style="font-weight: 700; color: var(--portal-text);">{{ art.title }}</div>
+                <div style="font-size: 0.76rem; color: var(--portal-text-muted); margin-top: 2px;">
+                  <span class="portal-pill portal-pill-dim">{{ art.category }}</span>
+                  {% if art.is_featured %}
+                    <span class="portal-pill portal-pill-lime">FEATURED</span>
+                  {% endif %}
+                </div>
+              </td>
+              <td>
+                {% if art.status == 'published' %}
+                  <span class="portal-pill portal-pill-green">PUBLISHED</span>
+                {% elif art.status == 'pending_review' %}
+                  <span class="portal-pill portal-pill-amber">PENDING REVIEW</span>
+                {% elif art.status == 'draft' %}
+                  <span class="portal-pill portal-pill-dim">DRAFT</span>
+                {% else %}
+                  <span class="portal-pill portal-pill-red">ARCHIVED</span>
+                {% endif %}
+              </td>
+              <td style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--portal-text-dim);">
+                {{ art.reading_time }} min
+              </td>
+              <td style="text-align: right; white-space: nowrap;">
+                <a href="{% url 'intelligence:detail' art.slug %}?preview=1" target="_blank" class="portal-btn-sm portal-btn-outline" title="Preview">
+                  <i class="bi bi-eye"></i>
+                </a>
+                <a href="{% url 'portal:intelligence_edit' art.pk %}" class="portal-btn-sm portal-btn-outline" title="Edit Article">
+                  <i class="bi bi-pencil"></i> Edit
+                </a>
+                {% if art.status != 'published' %}
+                  <form method="post" action="{% url 'portal:intelligence_publish' art.pk %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="portal-btn-sm portal-btn-accent" style="cursor: pointer;" title="Approve & Publish">
+                      <i class="bi bi-check2"></i> Publish
+                    </button>
+                  </form>
+                {% else %}
+                  <form method="post" action="{% url 'portal:intelligence_unpublish' art.pk %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="portal-btn-sm portal-btn-outline" style="cursor: pointer;" title="Unpublish to Draft">
+                      <i class="bi bi-pause-circle"></i>
+                    </button>
+                  </form>
+                {% endif %}
+                {% if art.status != 'archived' %}
+                  <form method="post" action="{% url 'portal:intelligence_archive' art.pk %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="portal-btn-sm portal-btn-outline" style="cursor: pointer;" title="Archive">
+                      <i class="bi bi-archive"></i>
+                    </button>
+                  </form>
+                {% endif %}
+                <form method="post" action="{% url 'portal:intelligence_delete' art.pk %}" style="display: inline;" onsubmit="return confirm('Delete {{ art.title|escapejs }}?');">
+                  {% csrf_token %}
+                  <button type="submit" class="portal-btn-sm portal-btn-outline" style="color: var(--portal-red); cursor: pointer;" title="Delete">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div style="text-align: center; padding: 48px 0; color: var(--portal-text-muted); font-family: var(--font-mono);">
+      <i class="bi bi-journal-code" style="font-size: 2rem; display: block; margin-bottom: 10px;"></i>
+      No Network Intelligence articles in this view yet. Click "Generate Today's Article" above to create one!
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

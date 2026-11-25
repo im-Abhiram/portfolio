@@ -1,19 +1,34 @@
+import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login as django_login, logout as django_logout
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import messages
 from django.db.models import Q
 from django.http import JsonResponse
+from django.utils import timezone
 from django.utils.text import slugify
+from django.views.decorators.http import require_POST
 
 from contact.models import ContactMessage
 from portfolio.models import Profile, Project, Skill, Certification, Experience
 from core.models import PortfolioSettings
+from intelligence.models import AISettings, ArticleGenerationLog, DailyArticle
+from intelligence.topics import TOPIC_BANK
+from intelligence.generator import (
+    ArticleValidationError,
+    DuplicateArticleError,
+    generate_daily_article,
+    get_local_date,
+    import_article_from_json_payload,
+)
+from journal.models import BlogPost
+from ai_services.gemini import get_gemini_config
 
 from .captcha import generate_captcha_code, generate_captcha_image
 from .forms import (
     PortalLoginForm, ProfileEditForm, PortfolioSettingsEditForm,
-    ProjectForm, SkillForm, CertificationForm, ExperienceForm
+    ProjectForm, SkillForm, CertificationForm, ExperienceForm,
+    AISettingsForm, DailyArticleForm, ArticleImportForm, BlogPostForm,
 )
 
 
@@ -107,10 +122,14 @@ def dashboard_view(request):
     total_skills = Skill.objects.count()
     total_certs = Certification.objects.count()
     total_exp = Experience.objects.count()
+    total_intel_published = DailyArticle.objects.filter(status='published').count()
+    pending_intel = DailyArticle.objects.filter(status='pending_review').count()
+    total_blog_posts = BlogPost.objects.count()
 
     recent_messages = ContactMessage.objects.all()[:5]
     profile = Profile.load()
     settings = PortfolioSettings.load()
+    ai_cfg = get_gemini_config()
 
     context = {
         'total_messages': total_messages,
@@ -119,6 +138,10 @@ def dashboard_view(request):
         'total_skills': total_skills,
         'total_certs': total_certs,
         'total_exp': total_exp,
+        'total_intel_published': total_intel_published,
+        'pending_intel': pending_intel,
+        'total_blog_posts': total_blog_posts,
+        'ai_cfg': ai_cfg,
         'recent_messages': recent_messages,
         'profile': profile,
         'settings': settings,
@@ -513,3 +536,295 @@ def experience_delete_view(request, pk):
     exp.delete()
     messages.success(request, f"Experience entry '{comp}' deleted.")
     return redirect('portal:experience_list')
+
+
+# ==========================================
+# NETWORK INTELLIGENCE (DAILY AI PUBLISHER)
+# ==========================================
+
+@staff_member_required(login_url='portal:login')
+def intelligence_list_admin_view(request):
+    """Admin manager for Network Intelligence articles & today's generation status."""
+    status_filter = request.GET.get('status', 'all')
+    articles_qs = DailyArticle.objects.all().order_by('-scheduled_date', '-generated_at')
+    if status_filter in ('draft', 'pending_review', 'published', 'archived'):
+        articles_qs = articles_qs.filter(status=status_filter)
+    else:
+        status_filter = 'all'
+
+    cfg = get_gemini_config()
+    today_date = get_local_date(cfg.get('timezone'))
+    today_article = DailyArticle.objects.filter(scheduled_date=today_date).first()
+    latest_failed_today = ArticleGenerationLog.objects.filter(
+        generation_date=today_date, status='failed'
+    ).first()
+
+    return render(request, 'portal/intelligence_list.html', {
+        'items': articles_qs,
+        'status_filter': status_filter,
+        'today_date': today_date,
+        'today_article': today_article,
+        'latest_failed_today': latest_failed_today,
+        'ai_cfg': cfg,
+        'counts': {
+            'all': DailyArticle.objects.count(),
+            'pending_review': DailyArticle.objects.filter(status='pending_review').count(),
+            'published': DailyArticle.objects.filter(status='published').count(),
+            'draft': DailyArticle.objects.filter(status='draft').count(),
+            'archived': DailyArticle.objects.filter(status='archived').count(),
+        },
+        'active_tab': 'intelligence',
+    })
+
+
+@staff_member_required(login_url='portal:login')
+@require_POST
+def intelligence_generate_today_view(request):
+    """Trigger synchronous Gemini generation of today's Network Intelligence article."""
+    cfg = get_gemini_config()
+    if not cfg['daily_article_enabled']:
+        messages.warning(request, "Daily article generation is disabled in AI Settings.")
+        return redirect('portal:intelligence_list')
+
+    regenerate = request.POST.get('regenerate') == '1'
+    explicit_topic = (request.POST.get('topic') or '').strip() or None
+
+    result = generate_daily_article(
+        explicit_topic=explicit_topic,
+        allow_regenerate_non_published=regenerate,
+    )
+    status = result.get('status')
+    msg = result.get('message', '')
+
+    if status == 'success':
+        messages.success(request, msg)
+    elif status == 'skipped':
+        messages.info(request, msg)
+    else:
+        messages.error(request, f"Generation did not complete: {msg}")
+    return redirect('portal:intelligence_list')
+
+
+@staff_member_required(login_url='portal:login')
+def intelligence_create_view(request):
+    if request.method == 'POST':
+        form = DailyArticleForm(request.POST, request.FILES)
+        if form.is_valid():
+            article = form.save()
+            article.ai_generated = False
+            article.save(update_fields=['ai_generated'])
+            messages.success(request, f"Article '{article.title}' created.")
+            return redirect('portal:intelligence_list')
+    else:
+        form = DailyArticleForm(initial={'status': 'draft'})
+
+    return render(request, 'portal/generic_form.html', {
+        'form': form,
+        'title': 'Write New Network Intelligence Article',
+        'subtitle': 'Create a structured daily networking or cybersecurity editorial post',
+        'cancel_url': 'portal:intelligence_list',
+        'active_tab': 'intelligence',
+    })
+
+
+@staff_member_required(login_url='portal:login')
+def intelligence_edit_view(request, pk):
+    article = get_object_or_404(DailyArticle, pk=pk)
+    if request.method == 'POST':
+        form = DailyArticleForm(request.POST, request.FILES, instance=article)
+        if form.is_valid():
+            updated = form.save()
+            messages.success(request, f"Article '{updated.title}' updated successfully.")
+            return redirect('portal:intelligence_list')
+    else:
+        form = DailyArticleForm(instance=article)
+
+    return render(request, 'portal/generic_form.html', {
+        'form': form,
+        'title': f'Edit Intelligence Post // {article.title}',
+        'subtitle': f'Status: {article.get_status_display()} • Modify sections, commands, takeaways, or cover image',
+        'cancel_url': 'portal:intelligence_list',
+        'preview_url': f"/intelligence/{article.slug}/?preview=1",
+        'active_tab': 'intelligence',
+    })
+
+
+@staff_member_required(login_url='portal:login')
+@require_POST
+def intelligence_publish_view(request, pk):
+    article = get_object_or_404(DailyArticle, pk=pk)
+    DailyArticle.objects.filter(is_featured=True).exclude(pk=article.pk).update(is_featured=False)
+    article.status = 'published'
+    if not article.published_at:
+        article.published_at = timezone.now()
+    article.is_featured = True
+    article.save()
+    messages.success(request, f"Article '{article.title}' approved and published live.")
+    return redirect('portal:intelligence_list')
+
+
+@staff_member_required(login_url='portal:login')
+@require_POST
+def intelligence_unpublish_view(request, pk):
+    article = get_object_or_404(DailyArticle, pk=pk)
+    article.status = 'draft'
+    article.is_featured = False
+    article.save()
+    messages.info(request, f"Article '{article.title}' unpublished and moved back to Draft.")
+    return redirect('portal:intelligence_list')
+
+
+@staff_member_required(login_url='portal:login')
+@require_POST
+def intelligence_archive_view(request, pk):
+    article = get_object_or_404(DailyArticle, pk=pk)
+    article.status = 'archived'
+    article.is_featured = False
+    article.save()
+    messages.info(request, f"Article '{article.title}' archived.")
+    return redirect('portal:intelligence_list')
+
+
+@staff_member_required(login_url='portal:login')
+@require_POST
+def intelligence_delete_view(request, pk):
+    article = get_object_or_404(DailyArticle, pk=pk)
+    title = article.title
+    article.delete()
+    messages.success(request, f"Article '{title}' deleted.")
+    return redirect('portal:intelligence_list')
+
+
+@staff_member_required(login_url='portal:login')
+def intelligence_logs_view(request):
+    """View generation history and previously used vs upcoming topics."""
+    logs = ArticleGenerationLog.objects.select_related('generated_article').all()[:50]
+    used_keys = set(DailyArticle.objects.exclude(topic_key='').values_list('topic_key', flat=True))
+    topics_status = [
+        {
+            'key': item['key'],
+            'topic': item['topic'],
+            'category': item['category'],
+            'used': item['key'] in used_keys,
+        }
+        for item in TOPIC_BANK
+    ]
+    return render(request, 'portal/intelligence_logs.html', {
+        'logs': logs,
+        'topics_status': topics_status,
+        'active_tab': 'intelligence',
+    })
+
+
+@staff_member_required(login_url='portal:login')
+def intelligence_import_view(request):
+    """Offline fallback importer if PythonAnywhere free tier blocks outbound Gemini access."""
+    if request.method == 'POST':
+        form = ArticleImportForm(request.POST)
+        if form.is_valid():
+            try:
+                raw_json = json.loads(form.cleaned_data['json_payload'])
+                article = import_article_from_json_payload(
+                    raw_data=raw_json,
+                    scheduled_date=form.cleaned_data.get('scheduled_date'),
+                    status=form.cleaned_data.get('status', 'pending_review'),
+                )
+                messages.success(request, f"Imported '{article.title}' cleanly.")
+                return redirect('portal:intelligence_list')
+            except (json.JSONDecodeError, ArticleValidationError, DuplicateArticleError) as exc:
+                messages.error(request, f"Import failed: {exc}")
+    else:
+        form = ArticleImportForm(initial={'scheduled_date': get_local_date()})
+
+    return render(request, 'portal/generic_form.html', {
+        'form': form,
+        'title': 'Import Network Intelligence Article JSON',
+        'subtitle': 'Offline PythonAnywhere fallback: paste JSON generated locally via `python manage.py generate_daily_article --export-json`',
+        'cancel_url': 'portal:intelligence_list',
+        'active_tab': 'intelligence',
+    })
+
+
+@staff_member_required(login_url='portal:login')
+def ai_settings_edit_view(request):
+    """Edit non-secret AI settings without ever exposing GEMINI_API_KEY."""
+    ai_settings = AISettings.load()
+    if request.method == 'POST':
+        form = AISettingsForm(request.POST, instance=ai_settings)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "AI configuration updated.")
+            return redirect('portal:ai_settings')
+    else:
+        form = AISettingsForm(instance=ai_settings)
+
+    return render(request, 'portal/ai_settings.html', {
+        'form': form,
+        'ai_settings': ai_settings,
+        'ai_cfg': get_gemini_config(),
+        'active_tab': 'ai_settings',
+    })
+
+
+# ==========================================
+# TECHNICAL FIELD NOTES (JOURNAL BLOG POSTS)
+# ==========================================
+
+@staff_member_required(login_url='portal:login')
+def journal_list_admin_view(request):
+    posts = BlogPost.objects.select_related('category').all().order_by('order', '-published_date')
+    return render(request, 'portal/journal_list.html', {
+        'items': posts,
+        'active_tab': 'journal',
+    })
+
+
+@staff_member_required(login_url='portal:login')
+def journal_create_view(request):
+    if request.method == 'POST':
+        form = BlogPostForm(request.POST)
+        if form.is_valid():
+            post = form.save()
+            messages.success(request, f"Field note '{post.title}' created.")
+            return redirect('portal:journal_list')
+    else:
+        form = BlogPostForm()
+
+    return render(request, 'portal/generic_form.html', {
+        'form': form,
+        'title': 'Add Technical Field Note',
+        'subtitle': 'Create a technical article in the Field Notes / Journal section',
+        'cancel_url': 'portal:journal_list',
+        'active_tab': 'journal',
+    })
+
+
+@staff_member_required(login_url='portal:login')
+def journal_edit_view(request, pk):
+    post = get_object_or_404(BlogPost, pk=pk)
+    if request.method == 'POST':
+        form = BlogPostForm(request.POST, instance=post)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Field note '{post.title}' updated.")
+            return redirect('portal:journal_list')
+    else:
+        form = BlogPostForm(instance=post)
+
+    return render(request, 'portal/generic_form.html', {
+        'form': form,
+        'title': f'Edit Field Note // {post.title}',
+        'subtitle': 'Modify summary, technical content, tags, or publication visibility',
+        'cancel_url': 'portal:journal_list',
+        'active_tab': 'journal',
+    })
+
+
+@staff_member_required(login_url='portal:login')
+@require_POST
+def journal_delete_view(request, pk):
+    post = get_object_or_404(BlogPost, pk=pk)
+    title = post.title
+    post.delete()
+    messages.success(request, f"Field note '{title}' deleted.")
+    return redirect('portal:journal_list')

@@ -1,0 +1,104 @@
+{% extends 'portal/base_portal.html' %}
+
+{% block page_title %}Network Intelligence // Generation History & Topics{% endblock %}
+
+{% block content %}
+<div class="portal-card">
+  <div class="portal-card-header">
+    <div>
+      <h3 class="portal-card-title"><i class="bi bi-clock-history"></i> Daily Generation Logs</h3>
+      <div class="portal-card-subtitle">Audit trail of scheduled/manual Gemini article generation attempts and token usage</div>
+    </div>
+    <a href="{% url 'portal:intelligence_list' %}" class="portal-btn-sm portal-btn-outline">
+      <i class="bi bi-arrow-left"></i> Back to Articles
+    </a>
+  </div>
+
+  {% if logs %}
+    <div class="portal-table-container">
+      <table class="portal-table">
+        <thead>
+          <tr>
+            <th>Schedule Date</th>
+            <th>Selected Topic</th>
+            <th>Status</th>
+            <th>Model & Tokens</th>
+            <th>Details / Error</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in logs %}
+            <tr>
+              <td style="font-family: var(--font-mono); font-size: 0.78rem;">{{ log.generation_date|date:"Y-m-d" }}</td>
+              <td style="font-weight: 600;">{{ log.selected_topic }}</td>
+              <td>
+                {% if log.status == 'success' %}
+                  <span class="portal-pill portal-pill-green">SUCCESS</span>
+                {% elif log.status == 'skipped' %}
+                  <span class="portal-pill portal-pill-dim">SKIPPED</span>
+                {% elif log.status == 'duplicate_blocked' %}
+                  <span class="portal-pill portal-pill-amber">DUPLICATE BLOCKED</span>
+                {% else %}
+                  <span class="portal-pill portal-pill-red">FAILED</span>
+                {% endif %}
+              </td>
+              <td style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--portal-text-muted);">
+                {{ log.model_used|default:"—" }}
+                {% if log.token_usage.total_tokens %}
+                  <div>{{ log.token_usage.total_tokens }} tokens</div>
+                {% endif %}
+              </td>
+              <td style="font-size: 0.78rem; color: var(--portal-text-muted); max-width: 280px;">
+                {% if log.generated_article %}
+                  <a href="{% url 'portal:intelligence_edit' log.generated_article.pk %}" style="color: var(--portal-lime);">Edit Article #{{ log.generated_article.pk }}</a>
+                {% endif %}
+                {% if log.error_message %}
+                  <div>{{ log.error_message|truncatechars:140 }}</div>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div style="text-align: center; padding: 36px; color: var(--portal-text-muted);">No generation logs recorded yet.</div>
+  {% endif %}
+</div>
+
+<div class="portal-card">
+  <div class="portal-card-header">
+    <div>
+      <h3 class="portal-card-title"><i class="bi bi-list-check"></i> Curated Topic Bank Status</h3>
+      <div class="portal-card-subtitle">Tracks previously published topics to prevent repetition</div>
+    </div>
+  </div>
+
+  <div class="portal-table-container">
+    <table class="portal-table">
+      <thead>
+        <tr>
+          <th>Topic</th>
+          <th>Category</th>
+          <th>Usage Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in topics_status %}
+          <tr>
+            <td style="font-weight: 600;">{{ t.topic }}</td>
+            <td><span class="portal-pill portal-pill-dim">{{ t.category }}</span></td>
+            <td>
+              {% if t.used %}
+                <span class="portal-pill portal-pill-green"><i class="bi bi-check2"></i> Covered</span>
+              {% else %}
+                <span class="portal-pill portal-pill-lime">Queued / Available</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

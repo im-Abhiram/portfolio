@@ -43,4 +43,23 @@ urlpatterns = [
     path('experience/create/', views.experience_create_view, name='experience_create'),
     path('experience/<int:pk>/edit/', views.experience_edit_view, name='experience_edit'),
     path('experience/<int:pk>/delete/', views.experience_delete_view, name='experience_delete'),
+
+    # Network Intelligence (Daily AI Publisher & Controls)
+    path('intelligence/', views.intelligence_list_admin_view, name='intelligence_list'),
+    path('intelligence/generate/', views.intelligence_generate_today_view, name='intelligence_generate'),
+    path('intelligence/create/', views.intelligence_create_view, name='intelligence_create'),
+    path('intelligence/import/', views.intelligence_import_view, name='intelligence_import'),
+    path('intelligence/logs/', views.intelligence_logs_view, name='intelligence_logs'),
+    path('intelligence/<int:pk>/edit/', views.intelligence_edit_view, name='intelligence_edit'),
+    path('intelligence/<int:pk>/publish/', views.intelligence_publish_view, name='intelligence_publish'),
+    path('intelligence/<int:pk>/unpublish/', views.intelligence_unpublish_view, name='intelligence_unpublish'),
+    path('intelligence/<int:pk>/archive/', views.intelligence_archive_view, name='intelligence_archive'),
+    path('intelligence/<int:pk>/delete/', views.intelligence_delete_view, name='intelligence_delete'),
+    path('ai-settings/', views.ai_settings_edit_view, name='ai_settings'),
+
+    # Technical Field Notes (Journal Posts)
+    path('journal/', views.journal_list_admin_view, name='journal_list'),
+    path('journal/create/', views.journal_create_view, name='journal_create'),
+    path('journal/<int:pk>/edit/', views.journal_edit_view, name='journal_edit'),
+    path('journal/<int:pk>/delete/', views.journal_delete_view, name='journal_delete'),
 ]

@@ -2,12 +2,14 @@ from django.shortcuts import render
 from django.http import HttpResponse, Http404, FileResponse
 from django.conf import settings
 import os
+import re
 
 from .models import PortfolioSettings
 from portfolio.models import Profile, Education, SkillCategory, Experience, Project, Certification
 from lab.models import NetworkKnowledgeTopic, SecurityTool, SecurityConcept
 from journal.models import BlogPost, SecurityNote
 from contact.forms import ContactForm
+from intelligence.models import DailyArticle
 
 
 def home_view(request):
@@ -30,6 +32,15 @@ def home_view(request):
     
     security_notes = SecurityNote.objects.filter(is_published=True)[:6]
     blog_posts = BlogPost.objects.filter(is_published=True)[:4]
+
+    # Network Intelligence published articles
+    published_intel = DailyArticle.objects.filter(status='published')
+    featured_intel = published_intel.filter(is_featured=True).first() or published_intel.first()
+    latest_intel = (
+        published_intel.exclude(pk=featured_intel.pk)[:4]
+        if featured_intel else published_intel[:4]
+    )
+    intel_categories = [c[0] for c in DailyArticle.CATEGORY_CHOICES]
     
     contact_form = ContactForm()
 
@@ -46,6 +57,10 @@ def home_view(request):
         'security_concepts': security_concepts,
         'security_notes': security_notes,
         'blog_posts': blog_posts,
+        'featured_intel': featured_intel,
+        'latest_intel': latest_intel,
+        'intel_categories': intel_categories,
+        'intel_total_count': published_intel.count(),
         'contact_form': contact_form,
     }
     return render(request, 'core/index.html', context)

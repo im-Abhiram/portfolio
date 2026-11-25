@@ -35,10 +35,15 @@
       </div>
     {% endfor %}
 
-    <div style="display: flex; gap: 12px; margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--portal-border);">
+    <div style="display: flex; gap: 12px; margin-top: 28px; padding-top: 18px; border-top: 1px solid var(--portal-border); flex-wrap: wrap;">
       <button type="submit" class="portal-btn-sm portal-btn-accent" style="padding: 10px 24px; font-size: 0.9rem; cursor: pointer;">
         <i class="bi bi-check2-circle"></i> Save & Deploy to Main Page
       </button>
+      {% if preview_url %}
+        <a href="{{ preview_url }}" target="_blank" class="portal-btn-sm portal-btn-outline" style="padding: 10px 18px;">
+          <i class="bi bi-eye"></i> Preview Post
+        </a>
+      {% endif %}
       <a href="{% url cancel_url %}" class="portal-btn-sm portal-btn-outline" style="padding: 10px 18px;">
         Cancel
       </a>
