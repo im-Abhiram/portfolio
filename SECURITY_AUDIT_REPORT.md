@@ -75,7 +75,7 @@ All identified **High** and **Medium** code-level vulnerabilities were remediate
 
 - **Upgraded Packages (`requirements.txt` & active environment):**
   - `Django` -> `6.1.3` (`>=6.1.3,<7.0` on Python >=3.12; `>=5.2.12,<6.0` on Python <3.12)
-  - `pillow` -> `13.0.0` (`>=13.0.0`)
+  - `pillow` -> `13.0.0` (`>=13.0.0; python_version >= "3.11"`, with Python 3.10 fallback `>=12.3.0,<13.0` in `requirements.txt`; upgrading PythonAnywhere's virtualenv from Python 3.10 to 3.11+ is recommended for Pillow 13.x & Django 6.1.x)
   - `python-dotenv` -> `1.2.4` (`>=1.2.4`)
   - `urllib3` -> `2.8.0` (`>=2.8.0`)
   - `certifi` -> `2026.11.20` (`>=2026.11.20`)
