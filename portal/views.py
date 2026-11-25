@@ -1,4 +1,6 @@
 import json
+import time
+from datetime import timedelta
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login as django_login, logout as django_logout
 from django.contrib.admin.views.decorators import staff_member_required
@@ -6,12 +8,14 @@ from django.contrib import messages
 from django.db.models import Q
 from django.http import JsonResponse
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.text import slugify
 from django.views.decorators.http import require_POST
 
 from contact.models import ContactMessage
 from portfolio.models import Profile, Project, Skill, Certification, Experience
 from core.models import PortfolioSettings
+from core.security import get_client_ip, log_security_event
 from intelligence.models import AISettings, ArticleGenerationLog, DailyArticle
 from intelligence.topics import TOPIC_BANK
 from intelligence.generator import (
@@ -25,6 +29,7 @@ from journal.models import BlogPost
 from ai_services.gemini import get_gemini_config
 
 from .captcha import generate_captcha_code, generate_captcha_image
+from .models import LoginAttemptLog
 from .forms import (
     PortalLoginForm, ProfileEditForm, PortfolioSettingsEditForm,
     ProjectForm, SkillForm, CertificationForm, ExperienceForm,
@@ -32,42 +37,115 @@ from .forms import (
 )
 
 
+def _get_safe_redirect_url(request, raw_url, fallback='portal:dashboard'):
+    """Validate redirect targets strictly against current host to prevent open redirects."""
+    if raw_url and isinstance(raw_url, str):
+        cleaned = raw_url.strip()
+        if url_has_allowed_host_and_scheme(
+            cleaned,
+            allowed_hosts={request.get_host()},
+            require_https=request.is_secure(),
+        ):
+            return cleaned
+    return fallback
+
+
 def refresh_captcha_view(request):
     """AJAX endpoint to generate and return a fresh CAPTCHA challenge."""
+    now = time.time()
+    recent_refreshes = [
+        ts for ts in request.session.get('portal_captcha_refreshes', [])
+        if isinstance(ts, (int, float)) and now - ts < 60
+    ]
+    if len(recent_refreshes) >= 30:
+        log_security_event('CAPTCHA_RATE_LIMIT', 'Excessive CAPTCHA refreshes in session.', request=request)
+        return JsonResponse({'status': 'error', 'error': 'Too many CAPTCHA refresh requests.'}, status=429)
+
+    recent_refreshes.append(now)
+    request.session['portal_captcha_refreshes'] = recent_refreshes
+
     code = generate_captcha_code()
     request.session['portal_captcha_code'] = code.upper()
+    request.session['portal_captcha_ts'] = now
     img_data = generate_captcha_image(code)
     return JsonResponse({'status': 'ok', 'image': img_data})
 
 
 def portal_login_view(request):
-    """Custom high-security NOC authentication portal with visual CAPTCHA verification."""
-    if request.user.is_authenticated and request.user.is_staff:
-        return redirect('portal:dashboard')
+    """Custom high-security NOC authentication portal with visual CAPTCHA and lockout protection."""
+    raw_next = request.GET.get('next') or request.POST.get('next') or ''
+    safe_next = _get_safe_redirect_url(request, raw_next, fallback='portal:dashboard')
+    template_next = safe_next if safe_next != 'portal:dashboard' else ''
 
-    next_url = request.GET.get('next') or request.POST.get('next') or 'portal:dashboard'
+    if request.user.is_authenticated and request.user.is_staff:
+        return redirect(safe_next)
 
     if request.method == 'POST':
-        form = PortalLoginForm(request.POST)
-        session_code = request.session.get('portal_captcha_code', '').strip().upper()
-        user_code = request.POST.get('captcha', '').strip().upper()
+        client_ip = get_client_ip(request)
+        cutoff = timezone.now() - timedelta(minutes=15)
+        recent_failures = LoginAttemptLog.objects.filter(
+            ip_address=client_ip,
+            succeeded=False,
+            created_at__gte=cutoff,
+        ).count()
 
-        # 1. Enforce CAPTCHA security challenge
-        if not session_code or user_code != session_code:
+        if recent_failures >= 5:
+            log_security_event(
+                'LOGIN_LOCKOUT',
+                f'ip={client_ip} recent_failures={recent_failures}',
+                request=request,
+                level='warning',
+            )
             new_code = generate_captcha_code()
             request.session['portal_captcha_code'] = new_code.upper()
+            request.session['portal_captcha_ts'] = time.time()
+            captcha_img = generate_captcha_image(new_code)
+            messages.error(
+                request,
+                "Too many failed authentication attempts. Access temporarily throttled for 15 minutes.",
+            )
+            return render(request, 'portal/login.html', {
+                'form': PortalLoginForm(),
+                'captcha_img': captcha_img,
+                'next': template_next,
+            }, status=429)
+
+        form = PortalLoginForm(request.POST)
+        session_code = request.session.get('portal_captcha_code', '').strip().upper()
+        captcha_ts = request.session.get('portal_captcha_ts')
+        is_expired = not isinstance(captcha_ts, (int, float)) or (time.time() - captcha_ts > 180)
+        user_code = request.POST.get('captcha', '').strip().upper()
+        attempted_username = (request.POST.get('username') or '')[:150]
+
+        # 1. Enforce CAPTCHA security challenge & 3-minute freshness window
+        if not session_code or is_expired or user_code != session_code:
+            LoginAttemptLog.objects.create(
+                ip_address=client_ip,
+                username_attempted=attempted_username,
+                succeeded=False,
+            )
+            log_security_event(
+                'LOGIN_CAPTCHA_FAILED',
+                f'ip={client_ip} expired={is_expired}',
+                request=request,
+                level='warning',
+            )
+            new_code = generate_captcha_code()
+            request.session['portal_captcha_code'] = new_code.upper()
+            request.session['portal_captcha_ts'] = time.time()
             captcha_img = generate_captcha_image(new_code)
 
             form.is_valid()  # populate cleaned_data/errors
-            form.add_error('captcha', "Security challenge verification failed. Please enter the characters shown below.")
+            form.add_error('captcha', "Security challenge verification failed or expired. Please enter the characters shown below.")
             return render(request, 'portal/login.html', {
                 'form': form,
                 'captcha_img': captcha_img,
-                'next': next_url,
+                'next': template_next,
             })
 
         # 2. CAPTCHA passed: single-use token purge
         request.session.pop('portal_captcha_code', None)
+        request.session.pop('portal_captcha_ts', None)
 
         if form.is_valid():
             username = form.cleaned_data['username']
@@ -76,38 +154,77 @@ def portal_login_view(request):
 
             if user is not None:
                 if user.is_active and user.is_staff:
+                    LoginAttemptLog.objects.create(
+                        ip_address=client_ip,
+                        username_attempted=user.username[:150],
+                        succeeded=True,
+                    )
+                    request.session.pop('portal_captcha_refreshes', None)
                     django_login(request, user)
+                    log_security_event(
+                        'LOGIN_SUCCESS',
+                        f'user={user.username} ip={client_ip}',
+                        request=request,
+                        level='info',
+                    )
                     messages.success(request, f"Authentication verified. Welcome back, {user.username}.")
-                    return redirect(next_url)
+                    return redirect(safe_next)
                 else:
+                    LoginAttemptLog.objects.create(
+                        ip_address=client_ip,
+                        username_attempted=username[:150],
+                        succeeded=False,
+                    )
+                    log_security_event(
+                        'LOGIN_DENIED_NON_STAFF',
+                        f'user={username[:80]} ip={client_ip}',
+                        request=request,
+                        level='warning',
+                    )
                     messages.error(request, "Access restricted. Staff privilege clearance required.")
             else:
+                LoginAttemptLog.objects.create(
+                    ip_address=client_ip,
+                    username_attempted=username[:150],
+                    succeeded=False,
+                )
+                log_security_event(
+                    'LOGIN_FAILED',
+                    f'user={username[:80]} ip={client_ip}',
+                    request=request,
+                    level='warning',
+                )
                 messages.error(request, "Access denied. Invalid operator credentials.")
 
         # If authentication failed, generate a fresh CAPTCHA for the next attempt
         new_code = generate_captcha_code()
         request.session['portal_captcha_code'] = new_code.upper()
+        request.session['portal_captcha_ts'] = time.time()
         captcha_img = generate_captcha_image(new_code)
         return render(request, 'portal/login.html', {
             'form': form,
             'captcha_img': captcha_img,
-            'next': next_url,
+            'next': template_next,
         })
     else:
         form = PortalLoginForm()
         code = generate_captcha_code()
         request.session['portal_captcha_code'] = code.upper()
+        request.session['portal_captcha_ts'] = time.time()
         captcha_img = generate_captcha_image(code)
 
     return render(request, 'portal/login.html', {
         'form': form,
         'captcha_img': captcha_img,
-        'next': next_url,
+        'next': template_next,
     })
 
 
+@require_POST
 def portal_logout_view(request):
-    """Terminates operator session and redirects to login."""
+    """Terminates operator session via POST and redirects to login."""
+    if request.user.is_authenticated:
+        log_security_event('ADMIN_LOGOUT', f'user={request.user.username}', request=request, level='info')
     django_logout(request)
     messages.info(request, "Operator session safely terminated. Encryption keys purged.")
     return redirect('portal:login')
@@ -158,7 +275,7 @@ def dashboard_view(request):
 def messages_list_view(request):
     """Inbox for visitor transmissions."""
     status_filter = request.GET.get('status', 'all')
-    search_query = request.GET.get('q', '').strip()
+    search_query = request.GET.get('q', '').strip()[:120]
 
     messages_qs = ContactMessage.objects.all()
 
@@ -191,9 +308,9 @@ def messages_list_view(request):
 
 @staff_member_required(login_url='portal:login')
 def message_detail_view(request, pk):
-    """View a single visitor transmission and auto-mark as read."""
+    """View a single visitor transmission (marks as read on POST only)."""
     msg = get_object_or_404(ContactMessage, pk=pk)
-    if not msg.is_read:
+    if request.method == 'POST' and not msg.is_read:
         msg.is_read = True
         msg.save()
 
@@ -213,22 +330,26 @@ def message_detail_view(request, pk):
     return redirect('portal:messages')
 
 
+@require_POST
 @staff_member_required(login_url='portal:login')
 def message_toggle_read_view(request, pk):
-    """Toggle read / unread status of a contact message."""
+    """Toggle read / unread status of a contact message via POST."""
     msg = get_object_or_404(ContactMessage, pk=pk)
     msg.is_read = not msg.is_read
     msg.save()
     status_label = "read" if msg.is_read else "unread"
     messages.success(request, f"Transmission #{msg.pk} marked as {status_label}.")
-    return redirect(request.META.get('HTTP_REFERER', 'portal:messages'))
+    safe_ref = _get_safe_redirect_url(request, request.META.get('HTTP_REFERER'), fallback='portal:messages')
+    return redirect(safe_ref)
 
 
+@require_POST
 @staff_member_required(login_url='portal:login')
 def message_delete_view(request, pk):
-    """Delete a visitor contact message."""
+    """Delete a visitor contact message via POST."""
     msg = get_object_or_404(ContactMessage, pk=pk)
     msg.delete()
+    log_security_event('ADMIN_DELETE', f'Deleted ContactMessage pk={pk} by {request.user.username}', request=request, level='info')
     messages.success(request, "Transmission deleted from system logs.")
     return redirect('portal:messages')
 
@@ -340,11 +461,13 @@ def project_edit_view(request, pk):
     })
 
 
+@require_POST
 @staff_member_required(login_url='portal:login')
 def project_delete_view(request, pk):
     project = get_object_or_404(Project, pk=pk)
     title = project.title
     project.delete()
+    log_security_event('ADMIN_DELETE', f'Deleted Project pk={pk} by {request.user.username}', request=request, level='info')
     messages.success(request, f"Project '{title}' removed from portfolio.")
     return redirect('portal:projects_list')
 
@@ -403,11 +526,13 @@ def skill_edit_view(request, pk):
     })
 
 
+@require_POST
 @staff_member_required(login_url='portal:login')
 def skill_delete_view(request, pk):
     skill = get_object_or_404(Skill, pk=pk)
     name = skill.name
     skill.delete()
+    log_security_event('ADMIN_DELETE', f'Deleted Skill pk={pk} by {request.user.username}', request=request, level='info')
     messages.success(request, f"Skill '{name}' removed.")
     return redirect('portal:skills_list')
 
@@ -466,11 +591,13 @@ def certification_edit_view(request, pk):
     })
 
 
+@require_POST
 @staff_member_required(login_url='portal:login')
 def certification_delete_view(request, pk):
     cert = get_object_or_404(Certification, pk=pk)
     title = cert.title
     cert.delete()
+    log_security_event('ADMIN_DELETE', f'Deleted Certification pk={pk} by {request.user.username}', request=request, level='info')
     messages.success(request, f"Certification '{title}' removed.")
     return redirect('portal:certifications_list')
 
@@ -529,11 +656,13 @@ def experience_edit_view(request, pk):
     })
 
 
+@require_POST
 @staff_member_required(login_url='portal:login')
 def experience_delete_view(request, pk):
     exp = get_object_or_404(Experience, pk=pk)
     comp = exp.company
     exp.delete()
+    log_security_event('ADMIN_DELETE', f'Deleted Experience pk={pk} by {request.user.username}', request=request, level='info')
     messages.success(request, f"Experience entry '{comp}' deleted.")
     return redirect('portal:experience_list')
 

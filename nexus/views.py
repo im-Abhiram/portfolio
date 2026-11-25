@@ -13,7 +13,7 @@ from ai_services.gemini import (
     GeminiServiceError,
     get_gemini_config,
 )
-from contact.views import get_client_ip
+from core.security import get_client_ip, log_security_event
 
 from .models import ChatUsageLog
 from .prompts import build_nexus_system_prompt
@@ -191,6 +191,7 @@ def nexus_chat_api(request):
     session_hash = _get_session_hash(request)
     allowed, remaining, limit_msg = _check_usage_limits(request, client_ip, session_hash, cfg)
     if not allowed:
+        log_security_event('AI_CHAT_RATE_LIMIT', limit_msg, request=request)
         return JsonResponse({
             'status': 'error',
             'code': 'rate_limited',

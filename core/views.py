@@ -5,6 +5,7 @@ import os
 import re
 
 from .models import PortfolioSettings
+from .security import log_security_event
 from portfolio.models import Profile, Education, SkillCategory, Experience, Project, Certification
 from lab.models import NetworkKnowledgeTopic, SecurityTool, SecurityConcept
 from journal.models import BlogPost, SecurityNote
@@ -44,6 +45,35 @@ def home_view(request):
     
     contact_form = ContactForm()
 
+    projects_json_map = {
+        p.slug: {
+            'title': p.title,
+            'category': p.category,
+            'badge_label': p.badge_label,
+            'summary': p.summary,
+            'architecture': p.architecture,
+            'demo_url': p.demo_url or '',
+            'github_url': p.github_url or '',
+            'features': p.get_features_list(),
+            'challenges': p.challenges_and_solutions,
+            'technologies': p.get_technologies_list(),
+        }
+        for p in projects
+    }
+
+    topics_json_map = {
+        t.slug: {
+            'title': t.title,
+            'badge_tag': t.badge_tag,
+            'short_explanation': t.short_explanation,
+            'how_it_works': t.how_it_works,
+            'practical_use': t.practical_use,
+            'troubleshooting_tip': t.troubleshooting_tip,
+            'relevant_tools': t.relevant_tools,
+        }
+        for t in network_topics
+    }
+
     context = {
         'site_settings': settings_obj,
         'profile': profile_obj,
@@ -61,6 +91,8 @@ def home_view(request):
         'latest_intel': latest_intel,
         'intel_categories': intel_categories,
         'intel_total_count': published_intel.count(),
+        'projects_json_map': projects_json_map,
+        'topics_json_map': topics_json_map,
         'contact_form': contact_form,
     }
     return render(request, 'core/index.html', context)
@@ -75,10 +107,10 @@ def download_resume_view(request):
     settings_obj = PortfolioSettings.load()
     if settings_obj.resume_file and settings_obj.resume_file.name:
         try:
-            file_path = os.path.abspath(settings_obj.resume_file.path)
-            media_root = os.path.abspath(settings.MEDIA_ROOT)
-            # Ensure path is strictly within MEDIA_ROOT (prevent directory traversal / symlink attacks)
-            if file_path.startswith(media_root) and os.path.exists(file_path):
+            file_path = os.path.realpath(settings_obj.resume_file.path)
+            media_root = os.path.realpath(settings.MEDIA_ROOT)
+            # Strict commonpath containment check prevents sibling-directory traversal
+            if os.path.commonpath([media_root, file_path]) == media_root and os.path.isfile(file_path):
                 raw_name = settings_obj.resume_download_name or os.path.basename(file_path)
                 # Sanitize filename against header injection / response splitting
                 clean_name = re.sub(r'[^a-zA-Z0-9_\-\.]', '_', raw_name)
@@ -89,6 +121,8 @@ def download_resume_view(request):
                     as_attachment=True,
                     filename=clean_name
                 )
+            else:
+                log_security_event('PATH_TRAVERSAL_BLOCKED', 'Resume path outside MEDIA_ROOT rejected', request=request)
         except Exception:
             pass  # Fall through to fallback text document safely
 
@@ -215,3 +249,16 @@ def custom_404_view(request, exception=None):
 
 def custom_500_view(request):
     return render(request, 'core/500.html', status=500)
+
+
+def robots_txt_view(request):
+    """Restrict search crawler indexing of administrative and internal API endpoints."""
+    content = (
+        "User-agent: *\n"
+        "Disallow: /portal/\n"
+        "Disallow: /admin/\n"
+        "Disallow: /sys-admin/\n"
+        "Disallow: /nexus/api/\n"
+        "Allow: /\n"
+    )
+    return HttpResponse(content, content_type='text/plain; charset=utf-8')

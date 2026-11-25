@@ -2,6 +2,7 @@ import hashlib
 import os
 from django.db import models
 from django.utils import timezone
+from core.validators import SafeUploadPath, validate_image_file
 
 
 class AISettings(models.Model):
@@ -121,7 +122,12 @@ class DailyArticle(models.Model):
     )
     category = models.CharField(max_length=80, choices=CATEGORY_CHOICES, default='Networking', db_index=True)
     tags = models.CharField(max_length=300, blank=True, help_text="Comma-separated tags")
-    cover_image = models.ImageField(upload_to='intelligence/covers/', blank=True, null=True)
+    cover_image = models.ImageField(
+        upload_to=SafeUploadPath('intelligence/covers'),
+        blank=True,
+        null=True,
+        validators=[validate_image_file],
+    )
     reading_time = models.PositiveIntegerField(default=6, help_text="Estimated reading time in minutes")
 
     scheduled_date = models.DateField(

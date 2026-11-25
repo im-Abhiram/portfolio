@@ -1,3 +1,4 @@
+import time
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
@@ -68,6 +69,7 @@ class PortalAuthenticationTests(TestCase):
         # Set session captcha
         session = self.client.session
         session['portal_captcha_code'] = 'VALID'
+        session['portal_captcha_ts'] = time.time()
         session.save()
 
         response = self.client.post(reverse('portal:login'), {
@@ -82,6 +84,7 @@ class PortalAuthenticationTests(TestCase):
         """Valid staff credentials with correct CAPTCHA successfully authenticate."""
         session = self.client.session
         session['portal_captcha_code'] = 'SEC99'
+        session['portal_captcha_ts'] = time.time()
         session.save()
 
         response = self.client.post(reverse('portal:login'), {
@@ -96,6 +99,7 @@ class PortalAuthenticationTests(TestCase):
         """Wrong password with valid CAPTCHA fails with invalid credentials message."""
         session = self.client.session
         session['portal_captcha_code'] = 'SEC99'
+        session['portal_captcha_ts'] = time.time()
         session.save()
 
         response = self.client.post(reverse('portal:login'), {
@@ -110,6 +114,7 @@ class PortalAuthenticationTests(TestCase):
         """Non-staff user cannot authenticate into operator portal."""
         session = self.client.session
         session['portal_captcha_code'] = 'SEC99'
+        session['portal_captcha_ts'] = time.time()
         session.save()
 
         response = self.client.post(reverse('portal:login'), {
@@ -121,9 +126,9 @@ class PortalAuthenticationTests(TestCase):
         self.assertContains(response, "Staff privilege clearance required")
 
     def test_operator_logout(self):
-        """Logging out purges session and redirects to login page."""
+        """Logging out via POST purges session and redirects to login page."""
         self.client.login(username='operator_abhiram', password='SecurePassword123!')
-        response = self.client.get(reverse('portal:logout'))
+        response = self.client.post(reverse('portal:logout'))
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('portal:login'))
 
@@ -181,13 +186,13 @@ class PortalManagementTests(TestCase):
         self.assertContains(res, "David")
         self.assertContains(res, "Project Inquiry")
 
-        # 2. Toggle read status
-        res_toggle = self.client.get(reverse('portal:message_toggle_read', kwargs={'pk': msg.pk}))
+        # 2. Toggle read status (POST)
+        res_toggle = self.client.post(reverse('portal:message_toggle_read', kwargs={'pk': msg.pk}))
         self.assertEqual(res_toggle.status_code, 302)
         msg.refresh_from_db()
         self.assertTrue(msg.is_read)
 
-        # 3. Message detail AJAX view
+        # 3. Message detail AJAX view (GET read-only)
         res_detail = self.client.get(
             reverse('portal:message_detail', kwargs={'pk': msg.pk}),
             HTTP_X_REQUESTED_WITH='XMLHttpRequest'
@@ -195,8 +200,8 @@ class PortalManagementTests(TestCase):
         self.assertEqual(res_detail.status_code, 200)
         self.assertEqual(res_detail.json()['subject'], "Project Inquiry")
 
-        # 4. Message deletion
-        res_del = self.client.get(reverse('portal:message_delete', kwargs={'pk': msg.pk}))
+        # 4. Message deletion (POST)
+        res_del = self.client.post(reverse('portal:message_delete', kwargs={'pk': msg.pk}))
         self.assertEqual(res_del.status_code, 302)
         self.assertFalse(ContactMessage.objects.filter(pk=msg.pk).exists())
 
@@ -284,7 +289,7 @@ class PortalManagementTests(TestCase):
         project.refresh_from_db()
         self.assertEqual(project.title, 'Automated Firewall Telemetry v2')
 
-        # Delete
-        res_del = self.client.get(reverse('portal:project_delete', kwargs={'pk': project.pk}))
+        # Delete (POST)
+        res_del = self.client.post(reverse('portal:project_delete', kwargs={'pk': project.pk}))
         self.assertEqual(res_del.status_code, 302)
         self.assertFalse(Project.objects.filter(pk=project.pk).exists())

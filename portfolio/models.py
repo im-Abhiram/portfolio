@@ -1,4 +1,5 @@
 from django.db import models
+from core.validators import SafeUploadPath, validate_image_file, validate_safe_url
 
 
 class Profile(models.Model):
@@ -24,7 +25,12 @@ class Profile(models.Model):
         max_length=255,
         default="B.Tech in Computer Science and Engineering — A.P.J Abdul Kalam Technological University (April 2025)"
     )
-    profile_image = models.ImageField(upload_to='profile/', blank=True, null=True)
+    profile_image = models.ImageField(
+        upload_to=SafeUploadPath('profile'),
+        blank=True,
+        null=True,
+        validators=[validate_image_file],
+    )
     hero_badge_label = models.CharField(max_length=100, default="IT OPERATIONS / NETWORKING / SECURITY")
 
     class Meta:
@@ -172,7 +178,7 @@ class Project(models.Model):
 
 class ProjectImage(models.Model):
     project = models.ForeignKey(Project, related_name='images', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='projects/')
+    image = models.ImageField(upload_to=SafeUploadPath('projects'), validators=[validate_image_file])
     caption = models.CharField(max_length=200, blank=True)
     order = models.PositiveIntegerField(default=0)
 
@@ -207,7 +213,7 @@ class Certification(models.Model):
 
 class SocialLink(models.Model):
     name = models.CharField(max_length=50)
-    url = models.CharField(max_length=255)
+    url = models.CharField(max_length=255, validators=[validate_safe_url])
     icon = models.CharField(max_length=50, default="bi-link-45deg")
     is_active = models.BooleanField(default=True)
     order = models.PositiveIntegerField(default=0)

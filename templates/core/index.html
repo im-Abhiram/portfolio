@@ -1308,41 +1308,9 @@
   </div>
 </div>
 
-<!-- Hidden Embedded Data for Instant Offline Modals -->
-<script id="projects-json-data" type="application/json">
-{
-  {% for proj in projects %}
-  "{{ proj.slug }}": {
-    "title": "{{ proj.title|escapejs }}",
-    "category": "{{ proj.category|escapejs }}",
-    "badge_label": "{{ proj.badge_label|escapejs }}",
-    "summary": "{{ proj.summary|escapejs }}",
-    "architecture": "{{ proj.architecture|escapejs }}",
-    "demo_url": "{{ proj.demo_url|default:''|escapejs }}",
-    "github_url": "{{ proj.github_url|default:''|escapejs }}",
-    "features": [{% for f in proj.get_features_list %}"{{ f|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}],
-    "challenges": "{{ proj.challenges_and_solutions|escapejs }}",
-    "technologies": [{% for t in proj.get_technologies_list %}"{{ t|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}]
-  }{% if not forloop.last %},{% endif %}
-  {% endfor %}
-}
-</script>
-
-<script id="topics-json-data" type="application/json">
-{
-  {% for topic in network_topics %}
-  "{{ topic.slug }}": {
-    "title": "{{ topic.title|escapejs }}",
-    "badge_tag": "{{ topic.badge_tag|escapejs }}",
-    "short_explanation": "{{ topic.short_explanation|escapejs }}",
-    "how_it_works": "{{ topic.how_it_works|escapejs }}",
-    "practical_use": "{{ topic.practical_use|escapejs }}",
-    "troubleshooting_tip": "{{ topic.troubleshooting_tip|escapejs }}",
-    "relevant_tools": "{{ topic.relevant_tools|escapejs }}"
-  }{% if not forloop.last %},{% endif %}
-  {% endfor %}
-}
-</script>
+<!-- Hidden Embedded Data for Instant Offline Modals (Django json_script XSS-safe encoding) -->
+{{ projects_json_map|json_script:"projects-json-data" }}
+{{ topics_json_map|json_script:"topics-json-data" }}
 
 {% endblock %}
 

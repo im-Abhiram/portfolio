@@ -3,7 +3,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
-from core.views import home_view, download_resume_view, custom_404_view, custom_500_view
+from core.views import home_view, download_resume_view, custom_404_view, custom_500_view, robots_txt_view
 from portal.views import portal_login_view, portal_logout_view, dashboard_view
 
 # Configure Django Admin Branding
@@ -17,7 +17,9 @@ urlpatterns = [
     path('admin/logout/', portal_logout_view, name='admin_logout_redirect'),
     path('admin/', dashboard_view, name='admin_root_dashboard'),
 
-    # 2. Obfuscated low-level Django ORM admin (accessible only if required)
+    # 2. Force custom CAPTCHA + brute-force protected login even on obfuscated Django ORM admin
+    path('sys-admin/login/', portal_login_view, name='sys_admin_login_redirect'),
+    path('sys-admin/logout/', portal_logout_view, name='sys_admin_logout_redirect'),
     path('sys-admin/', admin.site.urls),
 
     # 3. NOC Operations Portal & CMS
@@ -27,7 +29,8 @@ urlpatterns = [
     path('nexus/', include('nexus.urls', namespace='nexus')),
     path('intelligence/', include('intelligence.urls', namespace='intelligence')),
 
-    # 5. Public Portfolio Routes
+    # 5. Public Portfolio Routes & Crawler Policy
+    path('robots.txt', robots_txt_view, name='robots_txt'),
     path('', home_view, name='home'),
     path('resume/download/', download_resume_view, name='download_resume'),
     path('portfolio/', include('portfolio.urls', namespace='portfolio')),

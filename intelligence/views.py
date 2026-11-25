@@ -12,7 +12,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from contact.views import get_client_ip
+from core.security import get_client_ip, log_security_event
 from .models import DailyArticle, IntelSubscriber
 
 
@@ -21,8 +21,8 @@ def intelligence_list_view(request):
     Public NETWORK INTELLIGENCE archive with search, 7-category filters,
     featured today's article, pagination, and local watchlist signup.
     """
-    category = request.GET.get('category', '').strip()
-    search_query = request.GET.get('q', '').strip()
+    category = request.GET.get('category', '').strip()[:80]
+    search_query = request.GET.get('q', '').strip()[:120]
 
     all_published = DailyArticle.objects.filter(status='published')
     categories = [c[0] for c in DailyArticle.CATEGORY_CHOICES]

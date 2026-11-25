@@ -155,14 +155,24 @@
       tooltip.style.display = 'block';
       tooltip.style.left = `${e.clientX - rect.left + 15}px`;
       tooltip.style.top = `${e.clientY - rect.top + 15}px`;
-      tooltip.innerHTML = `
-        <div class="viz-tooltip-name">${hoveredNode.label}</div>
-        <div class="viz-tooltip-role">${hoveredNode.role}</div>
-        <div style="font-size: 0.68rem; color: var(--accent-lime); margin-top: 4px;">
-          IP: ${hoveredNode.ip}<br>
-          LATENCY: ${Math.floor(Math.random() * 2 + 1)}ms // STATUS: ACTIVE
-        </div>
-      `;
+
+      const nameEl = document.createElement('div');
+      nameEl.className = 'viz-tooltip-name';
+      nameEl.textContent = hoveredNode.label || '';
+
+      const roleEl = document.createElement('div');
+      roleEl.className = 'viz-tooltip-role';
+      roleEl.textContent = hoveredNode.role || '';
+
+      const metaEl = document.createElement('div');
+      metaEl.style.fontSize = '0.68rem';
+      metaEl.style.color = 'var(--accent-lime)';
+      metaEl.style.marginTop = '4px';
+      metaEl.appendChild(document.createTextNode(`IP: ${hoveredNode.ip || ''}`));
+      metaEl.appendChild(document.createElement('br'));
+      metaEl.appendChild(document.createTextNode(`LATENCY: ${Math.floor(Math.random() * 2 + 1)}ms // STATUS: ACTIVE`));
+
+      tooltip.replaceChildren(nameEl, roleEl, metaEl);
     } else if (tooltip) {
       tooltip.style.display = 'none';
     }

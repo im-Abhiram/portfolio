@@ -34,6 +34,8 @@ except ImportError:
 # Set environment variables for production on PythonAnywhere
 os.environ['DJANGO_SETTINGS_MODULE'] = 'config.settings'
 os.environ.setdefault('DJANGO_DEBUG', 'False')
+os.environ.setdefault('DJANGO_TRUST_PROXY_HEADERS', 'True')
+os.environ.setdefault('DJANGO_BEHIND_HTTPS_PROXY', 'True')
 os.environ.setdefault('DJANGO_ALLOWED_HOSTS', f'127.0.0.1,localhost,{username}.pythonanywhere.com,.pythonanywhere.com')
 
 # Optional fallback: configure Gemini variables via PythonAnywhere WSGI editor if not using .env

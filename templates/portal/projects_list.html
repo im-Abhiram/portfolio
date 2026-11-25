@@ -62,9 +62,12 @@
                 <a href="{% url 'portal:project_edit' p.pk %}" class="portal-btn-sm portal-btn-outline" title="Edit">
                   <i class="bi bi-pencil"></i> Edit
                 </a>
-                <a href="{% url 'portal:project_delete' p.pk %}" class="portal-btn-sm portal-btn-outline" style="color: var(--portal-red);" onclick="return confirm('Delete project {{ p.title }}?');" title="Delete">
-                  <i class="bi bi-trash"></i>
-                </a>
+                <form method="post" action="{% url 'portal:project_delete' p.pk %}" style="display: inline;" onsubmit="return confirm('Delete project {{ p.title|escapejs }}?');">
+                  {% csrf_token %}
+                  <button type="submit" class="portal-btn-sm portal-btn-outline" style="color: var(--portal-red); cursor: pointer;" title="Delete">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
               </td>
             </tr>
           {% endfor %}

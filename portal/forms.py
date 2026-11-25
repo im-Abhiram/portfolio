@@ -1,4 +1,5 @@
 import json
+import re
 from django import forms
 from django.utils import timezone
 from django.utils.text import slugify
@@ -180,6 +181,12 @@ class AISettingsForm(forms.ModelForm):
             'article_generation_timezone': forms.TextInput(attrs={'class': 'portal-input'}),
             'preferred_model': forms.TextInput(attrs={'class': 'portal-input', 'placeholder': 'e.g. gemini-3.5-flash-lite'}),
         }
+
+    def clean_preferred_model(self):
+        val = (self.cleaned_data.get('preferred_model') or '').strip()
+        if val and not re.fullmatch(r'[a-zA-Z0-9._\-]{3,64}', val):
+            raise forms.ValidationError("Invalid model identifier format (alphanumeric, '.', '_', '-' only).")
+        return val
 
 
 class DailyArticleForm(forms.ModelForm):

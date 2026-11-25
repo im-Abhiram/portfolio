@@ -15,10 +15,12 @@ venv.bak/
 
 # Django local overrides and temporary files
 local_settings.py
+.django_secret_key
 db.sqlite3
 db.sqlite3-journal
 db.sqlite3-shm
 db.sqlite3-wal
+logs/
 
 # IDE / Editor artifacts
 .idea/

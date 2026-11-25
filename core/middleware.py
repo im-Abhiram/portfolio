@@ -16,6 +16,7 @@ class SecurityHeadersMiddleware:
             "font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net; "
             "img-src 'self' data: https: blob:; "
             "connect-src 'self'; "
+            "object-src 'none'; "
             "frame-ancestors 'none'; "
             "base-uri 'self'; "
             "form-action 'self'; "
@@ -45,6 +46,12 @@ class SecurityHeadersMiddleware:
         response['Referrer-Policy'] = 'strict-origin-when-cross-origin'
         response['X-Content-Type-Options'] = 'nosniff'
         response['X-Frame-Options'] = 'DENY'
+
+        # Prevent caching of authenticated operator routes and AI chat endpoints
+        if request.path.startswith(('/portal/', '/admin/', '/sys-admin/', '/nexus/api/')):
+            response['Cache-Control'] = 'no-store, no-cache, must-revalidate, private'
+            response['Pragma'] = 'no-cache'
+            response['Expires'] = '0'
 
         # Information disclosure minimization: strip server signature headers if present
         if 'Server' in response:

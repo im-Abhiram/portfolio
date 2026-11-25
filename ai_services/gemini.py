@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
 import requests
+from core.security import log_security_event
 
 logger = logging.getLogger(__name__)
 
@@ -164,6 +165,11 @@ class GeminiClient:
         last_error: Optional[GeminiServiceError] = None
 
         for model_name in models_to_try:
+            # Strict SSRF / URL-path-injection validation on model name
+            if not re.fullmatch(r'[a-zA-Z0-9._\-]{3,64}', model_name):
+                log_security_event('GEMINI_INVALID_MODEL', f"Rejected invalid model name pattern: {model_name}")
+                raise ModelUnavailableError("Invalid Gemini model identifier configured.")
+
             url = f"{self.BASE_URL}/{model_name}:generateContent"
             headers = {
                 'x-goog-api-key': self.api_key,
@@ -173,11 +179,14 @@ class GeminiClient:
             try:
                 resp = requests.post(url, headers=headers, json=payload, timeout=self.timeout)
             except requests.exceptions.Timeout as exc:
+                log_security_event('GEMINI_TIMEOUT', f"Model {model_name} timed out after {self.timeout}s")
                 last_error = APITimeoutError(f"Request timed out after {self.timeout}s")
                 continue
             except requests.exceptions.ProxyError as exc:
+                log_security_event('GEMINI_PROXY_BLOCKED', f"Proxy blocked Gemini request: {type(exc).__name__}")
                 raise ConnectivityBlockedError(f"Outbound proxy restricted Gemini endpoint: {type(exc).__name__}")
             except requests.exceptions.ConnectionError as exc:
+                log_security_event('GEMINI_CONNECTION_ERROR', f"Network error reaching Gemini: {type(exc).__name__}")
                 raise ConnectivityBlockedError(f"Network connection to Gemini failed: {type(exc).__name__}")
             except requests.exceptions.RequestException as exc:
                 raise GeminiServiceError(f"HTTP error: {type(exc).__name__}")
@@ -194,6 +203,7 @@ class GeminiClient:
             err_msg = _scrub_secret(err_msg, self.api_key)
 
             if resp.status_code in (400, 401, 403):
+                log_security_event('GEMINI_AUTH_ERROR', f"Status {resp.status_code} for {model_name}: {err_msg}")
                 lower = err_msg.lower()
                 if 'api key' in lower or 'key not valid' in lower or resp.status_code == 401:
                     raise InvalidAPIKeyError(f"Auth failure ({resp.status_code}): {err_msg}")
@@ -202,6 +212,7 @@ class GeminiClient:
                 raise GeminiServiceError(f"Bad request ({resp.status_code}): {err_msg}")
 
             if resp.status_code == 429:
+                log_security_event('GEMINI_QUOTA_EXCEEDED', f"HTTP 429 for {model_name}: {err_msg}")
                 raise QuotaExceededError(f"Rate/Quota limit exceeded: {err_msg}")
 
             if resp.status_code in (404, 500, 502, 503, 504):

@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import FileExtensionValidator
+from .validators import SafeUploadPath, validate_resume_file
 
 
 class PortfolioSettings(models.Model):
@@ -20,10 +21,10 @@ class PortfolioSettings(models.Model):
         default="Kerala, India [UTC+05:30]"
     )
     resume_file = models.FileField(
-        upload_to='resumes/',
+        upload_to=SafeUploadPath('resumes'),
         blank=True,
         null=True,
-        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'docx'])],
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'docx']), validate_resume_file],
         help_text="Upload your resume document (PDF or DOCX)."
     )
     resume_download_name = models.CharField(

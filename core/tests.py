@@ -411,3 +411,7 @@ class SecurityHardeningTests(TestCase):
         """Verify project API rejects malformed slugs."""
         res = self.client.get('/portfolio/api/project/../../etc/passwd/')
         self.assertEqual(res.status_code, 404)
+
+
+from .security_tests import SecurityRegressionTests  # noqa: F401
+

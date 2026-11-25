@@ -100,12 +100,18 @@
                   title="View full transmission">
                   <i class="bi bi-eye"></i> View
                 </button>
-                <a href="{% url 'portal:message_toggle_read' msg.pk %}" class="portal-btn-sm portal-btn-outline" title="Toggle Read Status">
-                  <i class="bi {% if msg.is_read %}bi-envelope{% else %}bi-envelope-check{% endif %}"></i>
-                </a>
-                <a href="{% url 'portal:message_delete' msg.pk %}" class="portal-btn-sm portal-btn-outline" style="color: var(--portal-red);" onclick="return confirm('Permanently delete transmission #{{ msg.pk }}?');" title="Delete">
-                  <i class="bi bi-trash"></i>
-                </a>
+                <form method="post" action="{% url 'portal:message_toggle_read' msg.pk %}" style="display: inline;">
+                  {% csrf_token %}
+                  <button type="submit" class="portal-btn-sm portal-btn-outline" style="cursor: pointer;" title="Toggle Read Status">
+                    <i class="bi {% if msg.is_read %}bi-envelope{% else %}bi-envelope-check{% endif %}"></i>
+                  </button>
+                </form>
+                <form method="post" action="{% url 'portal:message_delete' msg.pk %}" style="display: inline;" onsubmit="return confirm('Permanently delete transmission #{{ msg.pk }}?');">
+                  {% csrf_token %}
+                  <button type="submit" class="portal-btn-sm portal-btn-outline" style="color: var(--portal-red); cursor: pointer;" title="Delete">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
               </td>
             </tr>
           {% endfor %}
@@ -205,10 +211,17 @@
 
         modal.classList.add('active');
 
-        // Mark read asynchronously via detail view
-        fetch(`/portal/messages/${id}/`, {
-          headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        }).catch(() => {});
+        // Mark read asynchronously via POST to prevent GET-based CSRF state mutation
+        const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (csrfInput) {
+          fetch(`/portal/messages/${id}/`, {
+            method: 'POST',
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-CSRFToken': csrfInput.value
+            }
+          }).catch(() => {});
+        }
       });
     });
   });

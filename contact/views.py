@@ -3,33 +3,11 @@ from django.http import JsonResponse
 from django.contrib import messages
 from django.utils import timezone
 from datetime import timedelta
+from core.security import get_client_ip, log_security_event
 from .models import ContactMessage
 from .forms import ContactForm
 
-
-import ipaddress
 import time
-
-
-def get_client_ip(request):
-    """Safely extracts and validates client IP address, guarding against header spoofing."""
-    remote_addr = request.META.get('REMOTE_ADDR', '127.0.0.1')
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-
-    # If X-Forwarded-For is supplied, validate its syntax
-    if x_forwarded_for:
-        candidate = x_forwarded_for.split(',')[0].strip()
-        try:
-            ipaddress.ip_address(candidate)
-            return candidate
-        except ValueError:
-            pass
-
-    try:
-        ipaddress.ip_address(remote_addr)
-        return remote_addr
-    except ValueError:
-        return '127.0.0.1'
 
 
 def contact_submit_view(request):
@@ -62,6 +40,7 @@ def contact_submit_view(request):
     ).count()
 
     if recent_count >= 5:
+        log_security_event('CONTACT_RATE_LIMIT', 'Contact submission IP threshold exceeded (5/15min)', request=request)
         err_msg = "Rate limit exceeded. Transmission blocked to prevent buffer overflow. Please try again in 15 minutes."
         if is_ajax:
             return JsonResponse({'status': 'error', 'message': err_msg}, status=429)
