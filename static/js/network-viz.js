@@ -40,7 +40,7 @@
     },
     {
       id: 'firewall',
-      label: 'pfSense Firewall',
+      label: 'Firewall',
       role: 'Stateful Filtering & NAT Edge',
       ip: '192.168.1.1 (Perimeter)',
       type: 'firewall',
@@ -52,8 +52,8 @@
     },
     {
       id: 'switch',
-      label: 'Cisco Core Switch',
-      role: '802.1Q Inter-VLAN Distribution',
+      label: 'Switch',
+      role: 'Inter-VLAN Distribution',
       ip: '192.168.1.2 (L3 Core)',
       type: 'switch',
       xRatio: 0.48,

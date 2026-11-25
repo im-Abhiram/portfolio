@@ -204,17 +204,18 @@
         <div>&copy; {{ current_year }} Abhiram Anil. Zero external Node build. PythonAnywhere Ready.</div>
         <div style="margin-top: 0.4rem; font-size: 0.72rem; font-family: var(--font-mono);">
           {% if user.is_authenticated and user.is_staff %}
-            <a href="{% url 'portal:dashboard' %}" style="color: var(--accent-lime); text-decoration: none;">
-              <i class="bi bi-speedometer2"></i> NOC Operations Portal (Active)
-            </a>
-            &bull;
-            <a href="{% url 'portal:logout' %}" style="color: var(--text-muted); text-decoration: none;">
-              Logout
-            </a>
+          <a href="{% url 'portal:dashboard' %}" style="color: var(--accent-lime); text-decoration: none;">
+            <i class="bi bi-speedometer2"></i> NOC Operations Portal (Active)
+          </a>
+          &bull;
+          <a href="{% url 'portal:logout' %}" style="color: var(--text-muted); text-decoration: none;">
+            Logout
+          </a>
           {% else %}
-            <a href="{% url 'portal:login' %}" style="color: var(--text-muted); text-decoration: none; opacity: 0.75;" title="Authorized Operator Login">
-              <i class="bi bi-shield-lock"></i> NOC Operator Portal
-            </a>
+          <a href="{% url 'portal:login' %}" style="color: var(--text-muted); text-decoration: none; opacity: 0.75;"
+            title="Authorized Operator Login">
+            <i class="bi bi-shield-lock"></i> NOC Operator Portal
+          </a>
           {% endif %}
         </div>
       </div>

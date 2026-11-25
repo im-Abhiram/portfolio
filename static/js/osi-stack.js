@@ -19,7 +19,7 @@
       name: 'Layer 7: Application Layer',
       pdu: 'Data',
       functions: 'Direct interface between end-user applications and underlying network services. Initiates and manages network requests.',
-      protocols: 'HTTP, HTTPS, DNS, DHCP, SSH, FTP, SMTP, RTMP, RTMPS, SNMP, Telnet',
+      protocols: 'HTTP, HTTPS, DNS, DHCP, SSH, FTP, SMTP, SNMP, Telnet',
       devices: 'Application Proxies, Web Application Firewalls (WAF), Load Balancers, API Gateways',
       scenarios: 'A user receives an HTTP 502 Bad Gateway or DNS NXDOMAIN. Bottom layers are functioning, but the application service daemon or upstream reverse proxy is down.'
     },

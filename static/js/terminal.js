@@ -79,18 +79,18 @@ Core Focus: Computer Networks, Operating Systems, Database Systems, System Secur
 
     skills: `
 [CORE SKILL ECOSYSTEM]
-• Network Infrastructure: Cisco Switching (802.1Q), VLANs, pfSense, TCP/IP, Diagnostics
+• Network Infrastructure: Cisco Switching, VLANs, pfSense, TCP/IP, Diagnostics
 • System Administration: Windows Server, Active Directory, OUs, GPO, Hardware Triage
 • Cybersecurity: Nmap, Wireshark, Burp Suite, Metasploit, Splunk, Gobuster, Netdiscover, Hydra
 • Development: Python, Django, SQL, JavaScript, C
-• Streaming Infrastructure: OBS Studio, Wirecast, RTMP, RTMPS broadcast ingest
+• Streaming Infrastructure: OBS Studio, Wirecast, Live broadcast ingest
 `,
 
     network: `
 [NETWORK INFRASTRUCTURE LAB]
 Architecture: Simulated Enterprise Backbone
-Perimeter: pfSense Stateful Packet Filter & NAT Translation
-Switching: Cisco 3750 Layer 3 Switch with 802.1Q Tagged Trunks
+Perimeter: Firewall & NAT Translation
+Switching: Switch with VLAN Tagged Trunks
 VLAN Segmentation:
   - VLAN 10 (IT Management - 192.168.10.0/24)
   - VLAN 20 (Corporate Admin - 192.168.20.0/24)
@@ -158,7 +158,7 @@ Focus Areas:
 1. JAIHIND TV — IT Executive (Nov 2025 – Present)
    Location: Thiruvananthapuram, India
    Scope: Cisco switching, pfSense firewalls, VLAN departmental isolation,
-   Active Directory domain management, and RTMP/RTMPS broadcast streaming.
+   Active Directory domain management, and live video broadcast streaming.
 
 2. OFFENSO HACKERS ACADEMY — Cybersecurity Intern (Aug 2025 – Feb 2026)
    Location: Thiruvananthapuram, India

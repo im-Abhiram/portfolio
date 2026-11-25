@@ -118,7 +118,7 @@ class Command(BaseCommand):
             name="Streaming Infrastructure",
             slug="streaming-infrastructure",
             icon="bi-broadcast-pin",
-            description="Low-latency RTMP/RTMPS ingest, hardware encoding, and live video broadcast operations.",
+            description="Low-latency video ingest, hardware encoding, and live video broadcast operations.",
             order=5
         )
 
@@ -347,22 +347,6 @@ class Command(BaseCommand):
             description="Multi-channel live video switching, lower-third graphic overlays, stream output redundancy, and studio production workflows.",
             order=2
         )
-        Skill.objects.create(
-            category=cat_stream,
-            name="RTMP",
-            proficiency_tag="Streaming Protocol",
-            icon="bi-reception-4",
-            description="Real-Time Messaging Protocol ingest configuration, streaming endpoint handshakes, and transmission monitoring.",
-            order=3
-        )
-        Skill.objects.create(
-            category=cat_stream,
-            name="RTMPS",
-            proficiency_tag="Secure Broadcast",
-            icon="bi-lock-fill",
-            description="Encrypted TLS media ingest, secure token authentication, and protected live broadcast transmission over public networks.",
-            order=4
-        )
         self.stdout.write("  [+] SkillCategories and Skills created.")
 
         # 5. Experience
@@ -379,10 +363,10 @@ class Command(BaseCommand):
                 "Administered network infrastructure using Cisco switches and pfSense firewalls.\n"
                 "Implemented VLANs for departmental isolation and threat mitigation.\n"
                 "Managed users and shared resources through Active Directory domains and groups.\n"
-                "Configured RTMP/RTMPS streaming ingest through OBS and Wirecast.\n"
+                "Configured live streaming ingest through OBS and Wirecast.\n"
                 "Supported live video broadcasts to internal and social media platforms."
             ),
-            technologies="Cisco Switches, pfSense Firewall, VLANs (802.1Q), Active Directory, Windows Server, OBS Studio, Wirecast, RTMP, RTMPS",
+            technologies="Cisco Switches, pfSense Firewall, VLANs, Active Directory, Windows Server, OBS Studio, Wirecast",
             order=1
         )
 
@@ -787,7 +771,7 @@ class Command(BaseCommand):
                 "badge_tag": "Internet Architecture",
                 "short_explanation": "The foundational communication model powering the global Internet, composed of Application, Transport, Internet, and Link layers.",
                 "how_it_works": "TCP provides reliable, ordered stream delivery via SYN-SYN/ACK-ACK 3-way handshakes and sequence acknowledgments, while UDP provides fast, connectionless datagram delivery.",
-                "practical_use": "Every enterprise service runs on TCP/IP: HTTP/S (TCP 80/443), SSH (TCP 22), DNS (UDP 53), and RTMP (TCP 1935).",
+                "practical_use": "Every enterprise service runs on TCP/IP: HTTP/S (TCP 80/443), SSH (TCP 22), and DNS (UDP 53).",
                 "troubleshooting_tip": "Use netstat -ano or ss -tulpn to check whether a local daemon is listening on the expected TCP port and binding to 0.0.0.0 or 127.0.0.1.",
                 "relevant_tools": "netstat, ss, tcpdump, Wireshark",
                 "order": 2
@@ -1185,7 +1169,7 @@ class Command(BaseCommand):
             title="Enterprise VLAN Segmentation Architecture: Isolating Broadcast Domains & Threat Surfaces",
             slug="enterprise-vlan-segmentation-architecture",
             category=cat_net_blog,
-            summary="A deep dive into planning 802.1Q VLAN topologies across enterprise Cisco switching layers to contain malware and optimize broadcast bandwidth.",
+            summary="A comprehensive guide to planning enterprise VLAN segmentation to isolate broadcast domains, restrict lateral movement, and optimize network traffic.",
             content="""### 1. The Operational Necessity of Segmentation
 In modern enterprise environments, flat networks represent an unacceptable risk. When all endpoints share a single broadcast domain, any compromised client can execute ARP poisoning, perform unrestricted port scans, and facilitate rapid lateral movement.
 
@@ -1193,7 +1177,7 @@ In modern enterprise environments, flat networks represent an unacceptable risk.
 At JAIHIND TV and in enterprise laboratories, segmenting by functional department and risk profile provides defense-in-depth:
 - **VLAN 10 (Management / IT)**: Switch management interfaces, jump boxes, out-of-band IPMI ports.
 - **VLAN 20 (Corporate Administration)**: Standard office workstations, printers, domain controller connectivity.
-- **VLAN 30 (Broadcast Production & Streaming)**: High-bandwidth RTMP/RTMPS ingest servers, Wirecast/OBS workstations.
+- **VLAN 30 (Broadcast Production & Streaming)**: High-bandwidth live video ingest servers, Wirecast/OBS workstations.
 - **VLAN 40 (Guest & Untrusted Wireless)**: Strictly isolated internet-only access with client-to-client blocking enabled.
 
 ### 3. Implementing 802.1Q Trunks & Inter-VLAN Routing
@@ -1221,7 +1205,7 @@ All inter-VLAN routing is delegated to a perimeter firewall (pfSense) or Layer 3
             title="Hardening pfSense Perimeter Firewalls: Stateful Rules, NAT Optimization & Defense-in-Depth",
             slug="hardening-pfsense-perimeter-firewalls",
             category=cat_sec_blog,
-            summary="Practical guidelines for configuring stateful packet inspection, strict ingress/egress policies, and alias management on pfSense firewalls.",
+            summary="Practical guidelines for configuring stateful packet inspection, strict ingress/egress policies, and alias management on firewalls.",
             content="""### 1. Default Deny as the Baseline
 A firewall's primary strength lies in explicit permission rather than broad allowance. In pfSense, the default rule on WAN is an absolute block. On internal interfaces, replace default 'any-to-any' pass rules with strict destination-restricted rules.
 
@@ -1229,7 +1213,7 @@ A firewall's primary strength lies in explicit permission rather than broad allo
 Managing individual IP addresses directly in firewall rules leads to configuration drift and administrative mistakes. Creating aliases for:
 - `DNS_SERVERS`: Approved internal and upstream resolvers.
 - `MANAGEMENT_HOSTS`: SysAdmin workstations permitted to access SSH/HTTPS webConfigurator.
-- `STREAMING_DESTINATIONS`: External RTMP/RTMPS broadcast endpoints.
+- `STREAMING_DESTINATIONS`: External live streaming broadcast endpoints.
 
 This makes firewall rules readable and self-documenting.
 
@@ -1277,10 +1261,10 @@ pfSense monitors connection states using FreeBSD's pf packet filter. When a TCP 
             order=3
         )
         SecurityNote.objects.create(
-            title="RTMP & RTMPS Stream Transport Diagnostics",
+            title="Live Stream Transport & Broadcast Diagnostics",
             category="operations",
-            summary="Triage procedures for frame drops, network jitter, and TCP window exhaustion during live high-bitrate video broadcasts.",
-            key_takeaways="Always prioritize RTMPS (port 443) over unencrypted RTMP (port 1935) across public ISP backbones.\nVerify QoS traffic shaping ensures broadcast stream queues take priority over administrative traffic.\nMonitor encoder dropped frames percentage in OBS/Wirecast alongside switch port utilization.",
+            summary="Triage procedures for frame drops, network jitter, and bandwidth optimization during live high-bitrate video broadcasts.",
+            key_takeaways="Prioritize encrypted streaming over public ISP backbones.\nVerify QoS traffic shaping ensures broadcast stream queues take priority over administrative traffic.\nMonitor encoder dropped frames percentage in OBS/Wirecast alongside switch port utilization.",
             date_recorded=timezone.now().date(),
             is_published=True,
             order=4
