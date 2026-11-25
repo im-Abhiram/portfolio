@@ -1,22 +1,22 @@
 {% if ai_status.chat_enabled %}
-<!-- NEXUS AI Floating Launcher (Positioned above CLI Console so zero UI overlap occurs) -->
+<!-- ramo.ai Floating Launcher (Positioned above CLI Console so zero UI overlap occurs) -->
 <button type="button"
         id="nexus-launcher-btn"
         class="nexus-launcher-btn {% if not ai_status.api_key_configured %}offline{% endif %}"
-        aria-label="Open NEXUS AI Networking & Cybersecurity Assistant"
-        title="Ask NEXUS AI (Networking, Security & Portfolio)">
+        aria-label="Open ramo.ai Networking & Cybersecurity Assistant"
+        title="Ask ramo.ai (Networking, Security & Portfolio)">
   <span class="nexus-launcher-dot"></span>
   <i class="bi bi-stars"></i>
-  <span>NEXUS AI</span>
+  <span>ramo.ai</span>
 </button>
 
-<!-- NEXUS AI Floating Chat Panel -->
+<!-- ramo.ai Floating Chat Panel -->
 <aside id="nexus-chat-panel"
        class="nexus-chat-panel"
        role="dialog"
        aria-modal="false"
        aria-hidden="true"
-       aria-label="NEXUS AI Assistant"
+       aria-label="ramo.ai Assistant"
        data-chat-url="{% url 'nexus:chat' %}"
        data-status-url="{% url 'nexus:status' %}"
        data-available="{% if ai_status.chat_enabled and ai_status.api_key_configured %}true{% else %}false{% endif %}">
@@ -28,7 +28,7 @@
       </div>
       <div class="nexus-title-group">
         <div class="nexus-title">
-          <span>NEXUS AI</span>
+          <span>ramo.ai</span>
           {% if ai_status.api_key_configured %}
             <span class="badge-tag" style="font-size: 0.6rem; padding: 0.1rem 0.35rem;">ONLINE</span>
           {% else %}
@@ -46,7 +46,7 @@
       <button type="button" id="nexus-clear-btn" class="nexus-icon-btn" title="Clear Chat">
         <i class="bi bi-trash3"></i>
       </button>
-      <button type="button" id="nexus-close-btn" class="nexus-icon-btn" title="Close [ESC]" aria-label="Close NEXUS AI">
+      <button type="button" id="nexus-close-btn" class="nexus-icon-btn" title="Close [ESC]" aria-label="Close ramo.ai">
         <i class="bi bi-x-lg"></i>
       </button>
     </div>
@@ -73,7 +73,7 @@
                 class="nexus-textarea"
                 rows="1"
                 maxlength="1500"
-                placeholder="{% if ai_status.api_key_configured %}Ask about VLANs, subnetting, Nmap, or Abhiram...{% else %}NEXUS AI currently offline...{% endif %}"
+                placeholder="{% if ai_status.api_key_configured %}Ask about VLANs, subnetting, Nmap, or Abhiram...{% else %}ramo.ai currently offline...{% endif %}"
                 {% if not ai_status.api_key_configured %}disabled{% endif %}></textarea>
       <button type="submit"
               id="nexus-send-btn"

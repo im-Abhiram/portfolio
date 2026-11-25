@@ -1,5 +1,5 @@
 /**
- * NEXUS AI — Networking & Cybersecurity Assistant Client Engine
+ * ramo.ai — Networking & Cybersecurity Assistant Client Engine
  * Security-hardened: No API keys in JS, strict DOM rendering (zero raw innerHTML),
  * CSRF-protected POST requests, sessionStorage history with clear/new chat actions.
  */
@@ -195,7 +195,7 @@
 
     const meta = document.createElement('div');
     meta.className = 'nexus-msg-meta';
-    meta.textContent = role === 'user' ? 'YOU' : 'NEXUS AI';
+    meta.textContent = role === 'user' ? 'YOU' : 'ramo.ai';
     row.appendChild(meta);
 
     const bubble = document.createElement('div');
@@ -239,8 +239,8 @@
     }
 
     const introText = IS_AVAILABLE
-      ? "Hello! I'm **NEXUS AI**, Abhiram Anil's networking & cybersecurity assistant.\n\nAsk me anything about **OSI/TCP-IP, subnetting, VLANs, firewalls, Nmap/Wireshark/Burp Suite, Active Directory, Django security**, or **Abhiram's verified background and projects**."
-      : "NEXUS AI is currently **offline** because server API credentials are not configured or chat has been paused by the administrator. All portfolio tools, Subnet Calculator, and Topology Simulators remain fully functional.";
+      ? "Hello! I'm **ramo.ai**, Abhiram Anil's networking & cybersecurity assistant.\n\nAsk me anything about **OSI/TCP-IP, subnetting, VLANs, firewalls, Nmap/Wireshark/Burp Suite, Active Directory, Django security**, or **Abhiram's verified background and projects**."
+      : "ramo.ai is currently **offline** because server API credentials are not configured or chat has been paused by the administrator. All portfolio tools, Subnet Calculator, and Topology Simulators remain fully functional.";
 
     appendMessageBubble('model', introText);
 
@@ -361,14 +361,14 @@
           quotaEl.textContent = `${data.remaining_today} queries left today`;
         }
       } else {
-        appendMessageBubble('model', data.message || 'Unable to reach NEXUS AI right now.', true);
+        appendMessageBubble('model', data.message || 'Unable to reach ramo.ai right now.', true);
         if (quotaEl && typeof data.remaining_today === 'number') {
           quotaEl.textContent = `${data.remaining_today} queries left today`;
         }
       }
     } catch (err) {
       removeTypingIndicator();
-      appendMessageBubble('model', 'Network interruption occurred while contacting NEXUS AI. Please retry shortly.', true);
+      appendMessageBubble('model', 'Network interruption occurred while contacting ramo.ai. Please retry shortly.', true);
     } finally {
       isSending = false;
       sendBtn.disabled = false;

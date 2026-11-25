@@ -182,5 +182,5 @@ class NexusChatbotViewTests(TestCase):
             res = self.client.get(reverse('home'))
             self.assertEqual(res.status_code, 200)
             self.assertNotIn(secret.encode('utf-8'), res.content)
-            self.assertContains(res, "NEXUS AI")
+            self.assertContains(res, "ramo.ai")
             self.assertContains(res, "NETWORK INTELLIGENCE")

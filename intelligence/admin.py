@@ -16,7 +16,7 @@ class AISettingsAdmin(admin.ModelAdmin):
             'fields': ('api_key_status_badge',),
             'description': 'GEMINI_API_KEY is stored exclusively in server environment variables (.env / WSGI) and is never saved to or displayed from the database.'
         }),
-        ('NEXUS AI Chatbot Controls', {
+        ('ramo.ai Chatbot Controls', {
             'fields': ('chat_enabled', 'chat_daily_limit_per_visitor', 'chat_rate_limit_per_minute', 'preferred_model')
         }),
         ('NETWORK INTELLIGENCE Publisher Controls', {

@@ -37,7 +37,7 @@
 
   <!-- Core Portfolio Design System -->
   <link rel="stylesheet" href="{% static 'css/portfolio.css' %}">
-  <!-- AI Modules (NEXUS AI & NETWORK INTELLIGENCE) -->
+  <!-- AI Modules (ramo.ai & NETWORK INTELLIGENCE) -->
   <link rel="stylesheet" href="{% static 'css/ai-modules.css' %}">
 
   {% block extra_head %}{% endblock %}
@@ -92,9 +92,9 @@
       <!-- Action Buttons -->
       <div class="navbar-actions">
         {% if ai_status.chat_enabled %}
-        <!-- NEXUS AI Quick Toggle -->
-        <button type="button" id="nav-nexus-btn" class="hud-btn hud-btn-icon-only" title="Ask NEXUS AI Assistant"
-          aria-label="Open NEXUS AI Assistant">
+        <!-- ramo.ai Quick Toggle -->
+        <button type="button" id="nav-nexus-btn" class="hud-btn hud-btn-icon-only" title="Ask ramo.ai Assistant"
+          aria-label="Open ramo.ai Assistant">
           <i class="bi bi-stars" style="color: var(--accent-lime);"></i>
         </button>
         {% endif %}
@@ -180,7 +180,7 @@
   </div>
   {% endif %}
 
-  <!-- NEXUS AI Floating Chatbot Widget -->
+  <!-- ramo.ai Floating Chatbot Widget -->
   {% include 'includes/nexus_chatbot.html' %}
 
   <!-- Back to Top Button -->

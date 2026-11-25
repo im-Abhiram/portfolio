@@ -42,7 +42,7 @@ def _check_usage_limits(request, client_ip: str, session_hash: str, cfg: dict):
     # 1. Global daily safety budget (protect free tier account)
     global_count = ChatUsageLog.objects.filter(usage_date=today, status='ok').count()
     if global_count >= DAILY_GLOBAL_BUDGET:
-        return False, 0, "NEXUS AI has reached today's global free-tier service capacity. Please check back tomorrow."
+        return False, 0, "ramo.ai has reached today's global free-tier service capacity. Please check back tomorrow."
 
     # 2. Short-window burst limit (per-minute per IP)
     one_min_ago = now - timedelta(seconds=60)
@@ -66,7 +66,7 @@ def _check_usage_limits(request, client_ip: str, session_hash: str, cfg: dict):
     remaining = max(0, daily_limit - visitor_today)
     if visitor_today >= daily_limit:
         return False, 0, (
-            f"You have reached your daily limit of {daily_limit} NEXUS AI questions on this free-tier portfolio. "
+            f"You have reached your daily limit of {daily_limit} ramo.ai questions on this free-tier portfolio. "
             "Please return tomorrow or reach out via the Contact section."
         )
 
@@ -84,9 +84,9 @@ def nexus_status_api(request):
     available = bool(cfg['chat_enabled'] and cfg['api_key_configured'])
     notice = ''
     if not cfg['chat_enabled']:
-        notice = "NEXUS AI assistant is currently disabled by the administrator."
+        notice = "ramo.ai assistant is currently disabled by the administrator."
     elif not cfg['api_key_configured']:
-        notice = "NEXUS AI is currently offline (API key not configured on server)."
+        notice = "ramo.ai is currently offline (API key not configured on server)."
 
     return JsonResponse({
         'status': 'ok',
@@ -112,14 +112,14 @@ def nexus_chat_api(request):
         return JsonResponse({
             'status': 'error',
             'code': 'chat_disabled',
-            'message': "NEXUS AI is currently paused by the administrator."
+            'message': "ramo.ai is currently paused by the administrator."
         }, status=503)
 
     if not cfg['api_key_configured']:
         return JsonResponse({
             'status': 'error',
             'code': 'missing_api_key',
-            'message': "NEXUS AI is currently unavailable because Gemini API credentials are not configured on the server."
+            'message': "ramo.ai is currently unavailable because Gemini API credentials are not configured on the server."
         }, status=503)
 
     # 1. Request payload size check

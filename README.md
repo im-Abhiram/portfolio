@@ -386,7 +386,7 @@ The portfolio features 8 production-grade projects spanning network simulation, 
 
 ## 8. Gemini AI Features & PythonAnywhere Scheduling
 
-### A. NEXUS AI — Networking & Cybersecurity Assistant
+### A. ramo.ai — Networking & Cybersecurity Assistant
 - Floating dark graphite assistant accessible site-wide (stacked cleanly above the CLI Console pill so zero controls are covered).
 - Powered server-side via Google Gemini REST API (`ai_services/gemini.py`) using `x-goog-api-key` headers — API credentials are never sent to the browser or exposed in HTML/JS.
 - Grounds portfolio answers strictly on Abhiram Anil's live verified database profile while handling beginner, intermediate, and advanced networking, cybersecurity, sysadmin, and programming questions.
@@ -459,7 +459,7 @@ GEMINI_API_TIMEOUT=25
 
 ## 10. Verification & Test Suite
 
-The automated test suite covers views, models, forms, security filters, rate limiting, DoS resistance, subnet calculator API, NEXUS AI error/quota handling, and NETWORK INTELLIGENCE generation/idempotency/editorial workflow.
+The automated test suite covers views, models, forms, security filters, rate limiting, DoS resistance, subnet calculator API, ramo.ai error/quota handling, and NETWORK INTELLIGENCE generation/idempotency/editorial workflow.
 
 Run all tests:
 ```powershell

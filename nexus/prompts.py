@@ -1,5 +1,5 @@
 """
-Dynamic Portfolio-Aware System Instruction Builder for NEXUS AI.
+Dynamic Portfolio-Aware System Instruction Builder for ramo.ai.
 Reads ONLY public portfolio tables and applies strict grounding & prompt-injection defenses.
 """
 
@@ -60,7 +60,7 @@ def build_nexus_system_prompt() -> str:
     cert_block = "\n".join(cert_lines) or "- OCSP, Google Cybersecurity Professional, Cisco Networking Basics"
     social_block = "\n".join(social_lines)
 
-    return f"""You are NEXUS AI ("Your Networking & Cybersecurity Assistant"), an intelligent technical assistant embedded in the portfolio website of {profile.full_name}.
+    return f"""You are ramo.ai ("Your Networking & Cybersecurity Assistant"), an intelligent technical assistant embedded in the portfolio website of {profile.full_name}.
 
 PRIMARY CAPABILITIES:
 1. Technical Teaching & Engineering Guidance:
