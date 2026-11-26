@@ -379,6 +379,9 @@
   // Event Bindings
   launcher.addEventListener('click', togglePanel);
   if (navBtn) navBtn.addEventListener('click', togglePanel);
+  document.querySelectorAll('[data-open-ramo-ai]').forEach(btn => {
+    btn.addEventListener('click', openPanel);
+  });
   if (closeBtn) closeBtn.addEventListener('click', closePanel);
   if (newChatBtn) newChatBtn.addEventListener('click', resetConversation);
   if (clearBtn) clearBtn.addEventListener('click', resetConversation);

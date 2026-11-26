@@ -35,6 +35,12 @@
           <a href="#contact" class="hud-btn">
             <i class="bi bi-chat-square-text"></i> <span>Connect With Me</span>
           </a>
+          {% if ai_status.chat_enabled %}
+          <button type="button" id="hero-ramo-btn" class="hud-btn" data-open-ramo-ai="true"
+            style="cursor: pointer;" title="Launch ramo.ai Assistant">
+            <i class="bi bi-stars text-accent-lime"></i> <span>Ask ramo.ai</span>
+          </button>
+          {% endif %}
         </div>
 
                 <!-- Live NOC Telemetry Ribbon -->

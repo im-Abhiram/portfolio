@@ -197,8 +197,7 @@
         </div>
         <div>{{ profile.title|default:"IT Executive | Network Infrastructure | Cybersecurity" }}</div>
         <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
-          <i class="bi bi-geo-alt"></i> {{ profile.location|default:"Kerala, India" }} • {{
-          site_settings.noc_status_text }}
+          <i class="bi bi-geo-alt"></i> {{ profile.location|default:"Kerala, India" }}
         </div>
       </div>
 
@@ -215,7 +214,7 @@
             <i class="bi bi-envelope-at fs-5"></i>
           </a>
         </div>
-        <div>&copy; {{ current_year }} Abhiram Anil. Zero external Node build. PythonAnywhere Ready.</div>
+        <div>&copy; {{ current_year }} Abhiram Anil.</div>
         <div style="margin-top: 0.4rem; font-size: 0.72rem; font-family: var(--font-mono);">
           {% if user.is_authenticated and user.is_staff %}
           <a href="{% url 'portal:dashboard' %}" style="color: var(--accent-lime); text-decoration: none;">
